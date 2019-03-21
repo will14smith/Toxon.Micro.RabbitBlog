@@ -35,7 +35,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             return exchangeName;
         }
 
-        public async Task RegisterHandlerAsync(string queueName, string route, Action<Message> handler, CancellationToken cancellationToken = default)
+        public async Task RegisterHandlerAsync(string queueName, string route, Func<Message, Task> handler, CancellationToken cancellationToken = default)
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -46,7 +46,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             var consumer = new AsyncEventingBasicConsumer(_model);
             consumer.Received += async (sender, ea) =>
             {
-                handler(Message.FromArgs(ea));
+                await handler(Message.FromArgs(ea));
 
                 _model.BasicAck(ea.DeliveryTag, false);
             };

@@ -107,7 +107,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             }
         }
 
-        public async Task RegisterHandlerAsync(string route, Func<Message, Message> handler, CancellationToken cancellationToken = default)
+        public async Task RegisterHandlerAsync(string route, Func<Message, Task<Message>> handler, CancellationToken cancellationToken = default)
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -125,9 +125,9 @@ namespace Toxon.Micro.RabbitBlog.Core
             _model.BasicConsume(queue.QueueName, false, consumer);
         }
 
-        private async Task HandleRequestAsync(BasicDeliverEventArgs ea, Func<Message, Message> handler)
+        private async Task HandleRequestAsync(BasicDeliverEventArgs ea, Func<Message, Task<Message>> handler)
         {
-            var response = handler(Message.FromArgs(ea));
+            var response = await handler(Message.FromArgs(ea));
 
             var properties = _model.CreateBasicProperties();
             properties.CorrelationId = ea.BasicProperties.CorrelationId;
