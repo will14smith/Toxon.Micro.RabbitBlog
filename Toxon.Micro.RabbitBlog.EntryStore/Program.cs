@@ -1,6 +1,9 @@
 ﻿using System;
 using RabbitMQ.Client;
 using Toxon.Micro.RabbitBlog.Core;
+using Toxon.Micro.RabbitBlog.Core.Json;
+using Toxon.Micro.RabbitBlog.Core.Patterns;
+using Toxon.Micro.RabbitBlog.EntryStore.Inbound;
 
 namespace Toxon.Micro.RabbitBlog.EntryStore
 {
@@ -16,7 +19,7 @@ namespace Toxon.Micro.RabbitBlog.EntryStore
             var channel = connection.CreateModel();
 
             var model = new RoutingModel(channel);
-            // TODO store:*,kind:entry => StoreRequest => logic.HandleStoreAsync
+            model.HandleAsync("entry-store.v1", RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
             
             Console.WriteLine("Running EntryStore... press enter to exit!");
             Console.ReadLine();

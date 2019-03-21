@@ -1,6 +1,9 @@
 ﻿using System;
 using RabbitMQ.Client;
 using Toxon.Micro.RabbitBlog.Core;
+using Toxon.Micro.RabbitBlog.Core.Json;
+using Toxon.Micro.RabbitBlog.Core.Patterns;
+using Toxon.Micro.RabbitBlog.Post.Inbound;
 
 namespace Toxon.Micro.RabbitBlog.Post
 {
@@ -16,7 +19,7 @@ namespace Toxon.Micro.RabbitBlog.Post
             var channel = connection.CreateModel();
 
             var model = new RoutingModel(channel);
-            // TODO post:entry => PostEntryRequest => logic.HandlePostEntryAsync
+            model.HandleAsync("post.v1", RouterPatternParser.Parse("post:entry"), (PostEntryRequest request) => logic.HandlePostEntryAsync(model, request));
 
             Console.WriteLine("Running Post... press enter to exit!");
             Console.ReadLine();

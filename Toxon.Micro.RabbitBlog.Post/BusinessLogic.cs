@@ -8,7 +8,7 @@ namespace Toxon.Micro.RabbitBlog.Post
 {
     internal class BusinessLogic
     {
-        public static async Task<object> HandlePostEntryAsync(IRoutingModel model, PostEntryRequest message)
+        public async Task<PostEntryResponse> HandlePostEntryAsync(IRoutingModel model, PostEntryRequest message)
         {
             var saveResponse = await model.CallAsync<SaveEntryResponse>(new SaveEntryRequest
             {
