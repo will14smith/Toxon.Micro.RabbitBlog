@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Core
 {
-    public class RoutingModel
+    public class RoutingModel : IRoutingModel
     {
         private readonly BusModel _bus;
         private readonly RpcModel _rpc;
@@ -14,20 +15,20 @@ namespace Toxon.Micro.RabbitBlog.Core
             _rpc = rpc;
         }
 
-        public void Send(Message message)
+        public Task SendAsync(Message message)
         {
             throw new NotImplementedException();
         }
-        public Message Call(Message message)
+        public Task<Message> CallAsync(Message message)
         {
             throw new NotImplementedException();
         }
 
-        public void Handle(string serviceKey, IRequestMatcher pattern, Action<Message> handle)
+        public Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handle)
         {
             throw new NotImplementedException();
         }
-        public void Handle(string serviceKey, IRequestMatcher pattern, Func<Message, Message> handle)
+        public Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handle)
         {
             throw new NotImplementedException();
         }

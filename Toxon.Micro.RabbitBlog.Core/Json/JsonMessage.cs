@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 
-namespace Toxon.Micro.RabbitBlog.Core
+namespace Toxon.Micro.RabbitBlog.Core.Json
 {
     public class JsonMessage
     {
