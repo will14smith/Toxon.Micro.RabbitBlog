@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
+using Toxon.Micro.RabbitBlog.Core.Json;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Core
@@ -26,13 +27,40 @@ namespace Toxon.Micro.RabbitBlog.Core
             throw new NotImplementedException();
         }
 
-        public Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handle)
+        public async Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handle)
         {
-            throw new NotImplementedException();
+            // TODO better route key? needs to be consistent across a cluster of services per route
+            var route = $"{serviceKey}-{pattern}";
+
+            await _rpc.SendAsync("toxon.micro.router.register", JsonMessage.Write(new RegisterRoute
+            {
+                ServiceKey = serviceKey,
+                RequestMatcher = pattern,
+                RouteKey = route
+            }));
+
+            await _bus.RegisterHandlerAsync(serviceKey, route, handle);
         }
-        public Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handle)
+        public async Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handle)
         {
-            throw new NotImplementedException();
+            // TODO better route key? needs to be consistent across a cluster of services per route
+            var route = $"{serviceKey}-{pattern}";
+
+            await _rpc.SendAsync("toxon.micro.router.register", JsonMessage.Write(new RegisterRoute
+            {
+                ServiceKey = serviceKey,
+                RequestMatcher = pattern,
+                RouteKey = route
+            }));
+
+            await _rpc.RegisterHandlerAsync(route, handle);
+        }
+
+        private class RegisterRoute
+        {
+            public string ServiceKey { get; set; }
+            public IRequestMatcher RequestMatcher { get; set; }
+            public string RouteKey { get; set; }
         }
     }
 }
