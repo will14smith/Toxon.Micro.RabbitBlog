@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using RabbitMQ.Client;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Core
@@ -9,6 +10,7 @@ namespace Toxon.Micro.RabbitBlog.Core
         private readonly BusModel _bus;
         private readonly RpcModel _rpc;
 
+        public RoutingModel(IModel model) : this(new BusModel(model), new RpcModel(model)) { }
         public RoutingModel(BusModel bus, RpcModel rpc)
         {
             _bus = bus;
