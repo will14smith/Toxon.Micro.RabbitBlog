@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using EasyNetQ;
 using RabbitMQ.Client.Events;
 
 namespace Toxon.Micro.RabbitBlog.Core
@@ -16,10 +17,9 @@ namespace Toxon.Micro.RabbitBlog.Core
         public IReadOnlyDictionary<string, object> Headers { get; }
         public byte[] Body { get; }
 
-        internal static Message FromArgs(BasicDeliverEventArgs ea)
+        internal static Message FromArgs(byte[] body, MessageProperties properties)
         {
-            var body = ea.Body;
-            var headers = ea.BasicProperties.Headers.ToDictionary(x => x.Key, x => x.Value);
+            var headers = properties.Headers.ToDictionary(x => x.Key, x => x.Value);
 
             return new Message(body, headers);
         }

@@ -3,24 +3,25 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using EasyNetQ;
+using EasyNetQ.Topology;
 
 namespace Toxon.Micro.RabbitBlog.Core
 {
-    public class RpcModel
+    public class RpcModel 
     {
-        private readonly IModel _model;
+        private const string ReplyExchangeName = "toxon.micro.rpc.reply";
+        private readonly IAdvancedBus _bus;
 
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<Message>> _responseHandlers
             = new ConcurrentDictionary<Guid, TaskCompletionSource<Message>>();
 
         private readonly AsyncLock _replyQueueLock = new AsyncLock();
-        private PublicationAddress _replyQueue;
+        private string _replyQueue;
 
-        public RpcModel(IModel model)
+        public RpcModel(IAdvancedBus bus)
         {
-            _model = model;
+            _bus = bus;
         }
 
         public async Task<Message> SendAsync(string route, Message message, CancellationToken cancellationToken = default)
@@ -29,7 +30,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             // TODO cts.CancelAfter(200);
 
             var correlationId = Guid.NewGuid();
-            var tcs = new TaskCompletionSource<Message>();
+            var tcs = new TaskCompletionSource<Message>(TaskCreationOptions.RunContinuationsAsynchronously);
             RegisterReplyHandler(correlationId, tcs);
 
             using (cts.Token.Register(() => RemoveReplyHandler(correlationId)))
@@ -38,12 +39,15 @@ namespace Toxon.Micro.RabbitBlog.Core
                 var exchange = await DeclareRpcExchangeAsync(cts.Token);
                 var replyAddress = await SubscribeToReplyAsync(cts.Token);
 
-                var properties = _model.CreateBasicProperties();
-                properties.CorrelationId = correlationId.ToString();
-                properties.ReplyToAddress = replyAddress;
-                properties.Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value);
+                var properties = new MessageProperties
+                {
+                    CorrelationId = correlationId.ToString(),
+                    ReplyTo = replyAddress,
 
-                _model.BasicPublish(exchange, route, properties, message.Body);
+                    Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value)
+                };
+
+                await _bus.PublishAsync(exchange, route, true, properties, message.Body);
 
                 return await tcs.Task;
             }
@@ -59,14 +63,14 @@ namespace Toxon.Micro.RabbitBlog.Core
             _responseHandlers.TryRemove(correlationId, out _);
         }
 
-        private async Task<string> DeclareRpcExchangeAsync(CancellationToken cancellationToken)
+        private async Task<IExchange> DeclareRpcExchangeAsync(CancellationToken cancellationToken)
         {
             var exchangeName = "toxon.micro.rpc";
-            _model.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-            return exchangeName;
+
+            return await _bus.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct);
         }
 
-        private async Task<PublicationAddress> SubscribeToReplyAsync(CancellationToken cancellationToken)
+        private async Task<string> SubscribeToReplyAsync(CancellationToken cancellationToken)
         {
             if (_replyQueue != null)
                 return _replyQueue;
@@ -76,33 +80,23 @@ namespace Toxon.Micro.RabbitBlog.Core
                 if (_replyQueue != null)
                     return _replyQueue;
 
-                var exchange = "toxon.micro.rpc.reply";
                 var replyQueue = $"toxon.micro.rpc.reply.{Guid.NewGuid()}";
 
-                _model.ExchangeDeclare(exchange, ExchangeType.Direct);
-                _model.QueueDeclare(replyQueue);
-                _model.QueueBind(replyQueue, exchange, replyQueue);
+                var exchange = await _bus.ExchangeDeclareAsync(ReplyExchangeName, ExchangeType.Direct);
+                var queue = await _bus.QueueDeclareAsync(replyQueue);
+                await _bus.BindAsync(exchange, queue, replyQueue);
 
-                var consumer = new AsyncEventingBasicConsumer(_model);
-                consumer.Received += async (sender, ea) =>
+                _bus.Consume(queue, (body, props, info) =>
                 {
-                    var correlationIdString = ea.BasicProperties.CorrelationId;
+                    var correlationIdString = props.CorrelationId;
 
                     if (Guid.TryParse(correlationIdString, out var correlationId) && _responseHandlers.TryRemove(correlationId, out var tcs))
                     {
-                        tcs.SetResult(Message.FromArgs(ea));
-                        _model.BasicAck(ea.DeliveryTag, false);
+                        tcs.SetResult(Message.FromArgs(body, props));
                     }
-                    else
-                    {
-                        // TODO requeue?
-                        _model.BasicNack(ea.DeliveryTag, false, false);
-                    }
+                });
 
-                };
-                _model.BasicConsume(replyQueue, false, consumer);
-
-                _replyQueue = new PublicationAddress(ExchangeType.Direct, exchange, replyQueue);
+                _replyQueue = replyQueue;
                 return _replyQueue;
             }
         }
@@ -112,30 +106,28 @@ namespace Toxon.Micro.RabbitBlog.Core
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             var exchange = await DeclareRpcExchangeAsync(cts.Token);
-            var queue = _model.QueueDeclare();
-            _model.QueueBind(queue.QueueName, exchange, route);
+            var queue = await _bus.QueueDeclareAsync();
+            await _bus.BindAsync(exchange, queue, route);
 
-            var consumer = new AsyncEventingBasicConsumer(_model);
-            consumer.Received += async (sender, ea) =>
-            {
-                await HandleRequestAsync(ea, handler);
-                _model.BasicAck(ea.DeliveryTag, false);
-            };
-
-            _model.BasicConsume(queue.QueueName, false, consumer);
+            _bus.Consume(queue, (body, props, info) => HandleRequestAsync(body, props, handler));
         }
 
-        private async Task HandleRequestAsync(BasicDeliverEventArgs ea, Func<Message, Task<Message>> handler)
+        private async Task HandleRequestAsync(byte[] body, MessageProperties props, Func<Message, Task<Message>> handler)
         {
-            var response = await handler(Message.FromArgs(ea));
+            var request = Message.FromArgs(body, props);
+            var response = await handler(request);
 
-            var properties = _model.CreateBasicProperties();
-            properties.CorrelationId = ea.BasicProperties.CorrelationId;
-            properties.Headers = response.Headers.ToDictionary(x => x.Key, x => x.Value);
+            var exchange = await _bus.ExchangeDeclareAsync(ReplyExchangeName, ExchangeType.Direct, passive: true);
 
-            _model.BasicPublish(
-                ea.BasicProperties.ReplyToAddress.ExchangeName,
-                ea.BasicProperties.ReplyToAddress.RoutingKey,
+            var properties = new MessageProperties
+            {
+                CorrelationId = props.CorrelationId,
+                Headers = response.Headers.ToDictionary(x => x.Key, x => x.Value)
+            };
+
+            await _bus.PublishAsync(exchange,
+                props.ReplyTo,
+                true,
                 properties,
                 response.Body);
         }

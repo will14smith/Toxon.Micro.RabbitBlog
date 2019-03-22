@@ -1,34 +1,35 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using EasyNetQ;
+using EasyNetQ.ConnectionString;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client;
-using Toxon.Micro.RabbitBlog.Core;
+using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Front.Http;
 
 namespace Toxon.Micro.RabbitBlog.Front
 {
     class Program
     {
-        private static readonly ConnectionFactory Factory = new ConnectionFactory { Uri = new Uri("amqp://guest:guest@localhost:5672"), DispatchConsumersAsync = true };
+        private static readonly ConnectionConfiguration RabbitConfig = new ConnectionStringParser().Parse("amqp://guest:guest@localhost:5672");
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            var connection = Factory.CreateConnection();
-            var channel = connection.CreateModel();
+            var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
 
-            var model = new RoutingModel(channel);
+            Thread.Sleep(1000);
+
+            var model = new RoutingModel(bus.Advanced);
 
             new WebHostBuilder()
                 .UseKestrel(k => k.ListenLocalhost(8500))
-                .ConfigureServices(services => services.AddSingleton(model))
+                .ConfigureServices(services => services.AddSingleton<IRoutingModel>(model))
                 .UseStartup<Startup>()
                 .Start();
 
             Console.WriteLine("Running Front... press enter to exit!");
             Console.ReadLine();
-
-            channel.Close();
-            connection.Close();
         }
     }
 }

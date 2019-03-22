@@ -2,18 +2,19 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using EasyNetQ;
+using EasyNetQ.Topology;
 
 namespace Toxon.Micro.RabbitBlog.Core
 {
     public class BusModel
     {
-        private readonly IModel _model;
+        private readonly IAdvancedBus _bus;
 
-        public BusModel(IModel model)
+
+        public BusModel(IAdvancedBus bus)
         {
-            _model = model;
+            _bus = bus;
         }
 
         public async Task SendAsync(string route, Message message, CancellationToken cancellationToken = default)
@@ -22,17 +23,19 @@ namespace Toxon.Micro.RabbitBlog.Core
 
             var exchange = await DeclareBusExchangeAsync(cts.Token);
 
-            var properties = _model.CreateBasicProperties();
-            properties.Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value);
+            var properties = new MessageProperties
+            {
+                Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value)
+            };
 
-            _model.BasicPublish(exchange, route, properties, message.Body);
+            await _bus.PublishAsync(exchange, route, true, properties, message.Body);
         }
 
-        private async Task<string> DeclareBusExchangeAsync(CancellationToken cancellationToken)
+        private async Task<IExchange> DeclareBusExchangeAsync(CancellationToken cancellationToken)
         {
             var exchangeName = "toxon.micro.bus";
-            _model.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-            return exchangeName;
+
+            return await _bus.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct);
         }
 
         public async Task RegisterHandlerAsync(string queueName, string route, Func<Message, Task> handler, CancellationToken cancellationToken = default)
@@ -40,18 +43,10 @@ namespace Toxon.Micro.RabbitBlog.Core
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             var exchange = await DeclareBusExchangeAsync(cts.Token);
-            var queue = _model.QueueDeclare(queueName, durable: true, exclusive: false);
-            _model.QueueBind(queue.QueueName, exchange, route);
+            var queue = _bus.QueueDeclare(queueName);
+            _bus.Bind(exchange, queue, route);
 
-            var consumer = new AsyncEventingBasicConsumer(_model);
-            consumer.Received += async (sender, ea) =>
-            {
-                await handler(Message.FromArgs(ea));
-
-                _model.BasicAck(ea.DeliveryTag, false);
-            };
-
-            _model.BasicConsume(queue.QueueName, false, consumer);
+            _bus.Consume(queue, (body, props, info) => handler(Message.FromArgs(body, props)));
         }
     }
 }

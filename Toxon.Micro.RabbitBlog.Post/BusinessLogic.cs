@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Core.Json;
+using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Post.Inbound;
 using Toxon.Micro.RabbitBlog.Post.Outbound;
 
