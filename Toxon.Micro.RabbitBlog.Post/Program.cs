@@ -21,7 +21,7 @@ namespace Toxon.Micro.RabbitBlog.Post
             var logic = new BusinessLogic();
 
             var model = new RoutingModel(bus.Advanced);
-            await model.HandleAsync("post.v1", RouterPatternParser.Parse("post:entry"), (PostEntryRequest request) => logic.HandlePostEntryAsync(model, request));
+            await model.RegisterHandlerAsync("post.v1", RouterPatternParser.Parse("post:entry"), (PostEntryRequest request) => logic.HandlePostEntryAsync(model, request));
 
             Console.WriteLine("Running Post... press enter to exit!");
             Console.ReadLine();

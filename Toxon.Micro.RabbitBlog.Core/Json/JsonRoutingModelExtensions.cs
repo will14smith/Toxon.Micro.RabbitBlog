@@ -31,20 +31,20 @@ namespace Toxon.Micro.RabbitBlog.Core.Json
             return CallAsync<TResponse>(model, request);
         }
 
-        public static Task HandleAsync<T>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<T, Task> handle)
+        public static Task RegisterHandlerAsync<T>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<T, Task> handler)
         {
-            return model.HandleAsync(serviceKey, pattern, requestMessage =>
+            return model.RegisterHandlerAsync(serviceKey, pattern, requestMessage =>
             {
                 var request = JsonMessage.Read<T>(requestMessage);
-                return handle(request);
+                return handler(request);
             });
         }
-        public static Task HandleAsync<TRequest, TResponse>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<TRequest, Task<TResponse>> handle)
+        public static Task RegisterHandlerAsync<TRequest, TResponse>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<TRequest, Task<TResponse>> handler)
         {
-            return model.HandleAsync(serviceKey, pattern, async requestMessage =>
+            return model.RegisterHandlerAsync(serviceKey, pattern, async requestMessage =>
             {
                 var request = JsonMessage.Read<TRequest>(requestMessage);
-                var response = await handle(request);
+                var response = await handler(request);
                 return JsonMessage.Write(response);
             });
         }

@@ -28,7 +28,7 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
             return await _rpc.SendAsync("toxon.micro.router.route", message);
         }
 
-        public async Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handle, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
+        public async Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{serviceKey}-{pattern}";
@@ -43,9 +43,9 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
                 Mode = mode
             }));
 
-            await _bus.RegisterHandlerAsync(serviceKey, route, handle);
+            await _bus.RegisterHandlerAsync(serviceKey, route, handler);
         }
-        public async Task HandleAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handle, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
+        public async Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{serviceKey}-{pattern}";
@@ -60,7 +60,7 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
                 Mode = mode
             })).ConfigureAwait(false);
 
-            await _rpc.RegisterHandlerAsync(route, handle);
+            await _rpc.RegisterHandlerAsync(route, handler);
         }
 
         private class RegisterRoute

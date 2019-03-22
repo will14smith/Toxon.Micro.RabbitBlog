@@ -23,7 +23,7 @@ namespace Toxon.Micro.RabbitBlog.EntryStore
             var logic = new BusinessLogic();
 
             var model = new RoutingModel(bus.Advanced);
-            await model.HandleAsync("entry-store.v1", RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
+            await model.RegisterHandlerAsync("entry-store.v1", RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
 
             Console.WriteLine("Running EntryStore... press enter to exit!");
             Console.ReadLine();
