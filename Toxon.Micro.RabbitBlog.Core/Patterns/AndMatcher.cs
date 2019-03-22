@@ -5,16 +5,16 @@ namespace Toxon.Micro.RabbitBlog.Core.Patterns
 {
     public class AndMatcher : IRequestMatcher
     {
-        private readonly IReadOnlyCollection<IRequestMatcher> _requestMatchers;
+        public IReadOnlyCollection<IRequestMatcher> RequestMatchers { get; }
 
         public AndMatcher(params IRequestMatcher[] requestMatchers)
         {
-            _requestMatchers = requestMatchers;
+            RequestMatchers = requestMatchers;
         }
 
         public override string ToString()
         {
-            return $"&& {string.Join(" ", _requestMatchers.Select(x => $"({x})"))}";
+            return $"&& {string.Join(" ", RequestMatchers.Select(x => $"({x})"))}";
         }
     }
 }

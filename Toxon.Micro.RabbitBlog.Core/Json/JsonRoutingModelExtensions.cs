@@ -1,27 +1,34 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
+using Toxon.Micro.RabbitBlog.Core.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Core.Json
 {
     public static class JsonRoutingModelExtensions
     {
-        public static Task SendAsync(this IRoutingModel model, object message)
+        public static async Task SendAsync(this IRoutingModel model, object request)
         {
-            throw new NotImplementedException();
+            var message = JsonMessage.Write(request);
+
+            await model.SendAsync(message);
         }
-        public static Task<TResponse> CallAsync<TResponse>(this IRoutingModel model, object message)
+        public static async Task<TResponse> CallAsync<TResponse>(this IRoutingModel model, object request)
         {
-            throw new NotImplementedException();
+            var requestMessage = JsonMessage.Write(request);
+
+            var responseMessage = await model.CallAsync(requestMessage);
+
+            return JsonMessage.Read<TResponse>(responseMessage);
         }
 
-        public static Task SendAsync<T>(this IRoutingModel model, T message)
+        public static Task SendAsync<T>(this IRoutingModel model, T request)
         {
-            throw new NotImplementedException();
+            return SendAsync(model, (object)request);
         }
-        public static Task<TResponse> CallAsync<TRequest, TResponse>(this IRoutingModel model, TRequest message)
+        public static Task<TResponse> CallAsync<TRequest, TResponse>(this IRoutingModel model, TRequest request)
         {
-            throw new NotImplementedException();
+            return CallAsync<TResponse>(model, request);
         }
 
         public static Task HandleAsync<T>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<T, Task> handle)
@@ -34,12 +41,11 @@ namespace Toxon.Micro.RabbitBlog.Core.Json
         }
         public static Task HandleAsync<TRequest, TResponse>(this IRoutingModel model, string serviceKey, IRequestMatcher pattern, Func<TRequest, Task<TResponse>> handle)
         {
-            return model.HandleAsync(serviceKey, pattern, requestMessage =>
+            return model.HandleAsync(serviceKey, pattern, async requestMessage =>
             {
                 var request = JsonMessage.Read<TRequest>(requestMessage);
-                var response = handle(request);
-                var responseMessage = JsonMessage.Write(response);
-                return Task.FromResult(responseMessage);
+                var response = await handle(request);
+                return JsonMessage.Write(response);
             });
         }
     }

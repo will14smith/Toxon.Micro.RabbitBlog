@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EasyNetQ" Version="3.4.5" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
+    <PackageReference Include="Serilog" Version="2.8.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
   </ItemGroup>
 
 </Project>
