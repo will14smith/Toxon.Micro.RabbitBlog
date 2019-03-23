@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
-using RabbitMQ.Client;
 using Toxon.Micro.RabbitBlog.Core.Json;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
 using Toxon.Micro.RabbitBlog.Core.Routing;

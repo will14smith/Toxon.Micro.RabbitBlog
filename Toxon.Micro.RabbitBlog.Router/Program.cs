@@ -34,8 +34,8 @@ namespace Toxon.Micro.RabbitBlog.Router
 
                 return JsonMessage.Write(new RegisterRouteResponse { Done = response });
             });
-            
-            await bus.RegisterHandlerAsync("toxon.micro.router.route", "toxon.micro.router.route", logic.RouteBusMessage);
+
+            await bus.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteBusMessage);
             await rpc.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteRpcMessage);
 
             Console.WriteLine("Running Router... press enter to exit!");

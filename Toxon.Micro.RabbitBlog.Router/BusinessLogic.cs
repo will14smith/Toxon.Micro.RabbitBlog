@@ -46,9 +46,13 @@ namespace Toxon.Micro.RabbitBlog.Router
             return true;
         }
 
-        public Task RouteBusMessage(Message message)
+        public async Task RouteBusMessage(Message message)
         {
-            throw new NotImplementedException();
+            var route = _router.Match(message);
+
+            _logger.Write(LogEventLevel.Information, "Routing message to {serviceKey} via {routeKey}", route.ServiceKey, route.Data.RouteKey);
+
+            await _bus.SendAsync(route.Data.RouteKey, message);
         }
 
         public async Task<Message> RouteRpcMessage(Message message)

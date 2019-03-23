@@ -43,7 +43,7 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
                 Mode = mode
             }));
 
-            await _bus.RegisterHandlerAsync(serviceKey, route, handler);
+            await _bus.RegisterHandlerAsync(route, handler);
         }
         public async Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
         {
