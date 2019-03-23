@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="zipkin4net" Version="1.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
+  </ItemGroup>
+
+</Project>

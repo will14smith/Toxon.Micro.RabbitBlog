@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Entr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Index", "Toxon.Micro.RabbitBlog.Index\Toxon.Micro.RabbitBlog.Index.csproj", "{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracing", "Tracing", "{6CF847AC-0485-4988-BCA7-61535459B9F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Zipkin", "Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj", "{5D84F789-F09E-44C4-B789-593C543B154C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +53,10 @@ Global
 		{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D84F789-F09E-44C4-B789-593C543B154C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D84F789-F09E-44C4-B789-593C543B154C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D84F789-F09E-44C4-B789-593C543B154C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D84F789-F09E-44C4-B789-593C543B154C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +68,7 @@ Global
 		{EA5B69EC-5C24-4EDC-B369-D472607E6912} = {A98B399C-F325-4710-9A3F-634F11DE923C}
 		{24AF0388-BB3B-4CEF-A7C8-CCAAC32258C9} = {A98B399C-F325-4710-9A3F-634F11DE923C}
 		{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4} = {A98B399C-F325-4710-9A3F-634F11DE923C}
+		{5D84F789-F09E-44C4-B789-593C543B154C} = {6CF847AC-0485-4988-BCA7-61535459B9F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {767783F3-D6BC-48BB-A42E-9480E22D56C4}

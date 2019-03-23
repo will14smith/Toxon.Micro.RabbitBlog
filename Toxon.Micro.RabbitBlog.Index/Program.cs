@@ -8,11 +8,14 @@ using Toxon.Micro.RabbitBlog.Core.Patterns;
 using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Index.Inbound;
 using Toxon.Micro.RabbitBlog.Index.Translation;
+using Toxon.Micro.RabbitBlog.Zipkin;
 
 namespace Toxon.Micro.RabbitBlog.Index
 {
     class Program
     {
+        private const string ServiceName = "index.v1";
+
         private static readonly ConnectionConfiguration RabbitConfig = new ConnectionStringParser().Parse("amqp://guest:guest@localhost:5672");
 
         static async Task Main(string[] args)
@@ -21,13 +24,14 @@ namespace Toxon.Micro.RabbitBlog.Index
 
             var logic = new BusinessLogic();
 
-            var model = new RoutingModel(bus.Advanced);
+            var model = new RoutingModel(bus.Advanced)
+                .ConfigureTracing(ServiceName);
 
-            await model.RegisterHandlerAsync("index.v1", RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request) => logic.HandleInsert(request));
-            await model.RegisterHandlerAsync("index.v1", RouterPatternParser.Parse("search:query"), (SearchQueryRequest request) => logic.HandleQuery(request));
+            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request) => logic.HandleInsert(request));
+            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("search:query"), (SearchQueryRequest request) => logic.HandleQuery(request));
             
             // translation
-            await model.RegisterHandlerAsync("index.v1", RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request) =>
+            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request) =>
             {
                 var translatedRequest = new SearchInsertRequest
                 {

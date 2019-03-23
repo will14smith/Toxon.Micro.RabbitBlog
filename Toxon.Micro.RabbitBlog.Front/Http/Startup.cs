@@ -8,13 +8,20 @@ using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Core.Json;
 using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Front.Outbound;
+using Toxon.Micro.RabbitBlog.Zipkin;
+using zipkin4net.Middleware;
 
 namespace Toxon.Micro.RabbitBlog.Front.Http
 {
     public class Startup
     {
+        private const string ServiceName = "front.v1";
+
         public void Configure(IApplicationBuilder app, IRoutingModel model)
         {
+            model = model.ConfigureTracing(ServiceName);
+            app.UseTracing(ServiceName);
+
             app.Get("/list", context => HandleList(model, context));
             app.Get("/search", context => HandleSearch(model, context));
             app.Post("/new", context => HandleNewAsync(model, context));

@@ -13,9 +13,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="zipkin4net.middleware.aspnetcore" Version="1.2.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj" />
   </ItemGroup>
 </Project>
