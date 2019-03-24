@@ -6,14 +6,15 @@ using EasyNetQ.ConnectionString;
 using Toxon.Micro.RabbitBlog.Core.Json;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
 using Toxon.Micro.RabbitBlog.Core.Routing;
-using Toxon.Micro.RabbitBlog.EntryStore.Inbound;
+using Toxon.Micro.RabbitBlog.EntryCache.Messages;
 using Toxon.Micro.RabbitBlog.Zipkin;
+using zipkin4net;
 
-namespace Toxon.Micro.RabbitBlog.EntryStore
+namespace Toxon.Micro.RabbitBlog.EntryCache
 {
     class Program
     {
-        private const string ServiceName = "entry-store.v2";
+        private const string ServiceName = "entry-cache.v1";
 
         private static readonly ConnectionConfiguration RabbitConfig = new ConnectionStringParser().Parse("amqp://guest:guest@localhost:5672");
 
@@ -23,16 +24,33 @@ namespace Toxon.Micro.RabbitBlog.EntryStore
 
             Thread.Sleep(1000);
 
-            var logic = new BusinessLogic();
-            
             var model = new RoutingModel(bus.Advanced)
                 .ConfigureTracing(ServiceName);
 
-            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("store:*,kind:entry,cache:true"), (StoreRequest request) => logic.HandleStoreAsync(request));
+            var logic = new BusinessLogic(model);
+            
             await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
 
             Console.WriteLine("Running EntryStore... press enter to exit!");
             Console.ReadLine();
+        }
+    }
+
+    internal class ConsoleLogger : ILogger
+    {
+        public void LogInformation(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        public void LogWarning(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        public void LogError(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }
