@@ -1,10 +1,11 @@
-﻿using System;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Router.Messages;
+using Toxon.Micro.RabbitBlog.Router.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Router
 {
@@ -13,7 +14,11 @@ namespace Toxon.Micro.RabbitBlog.Router
         private readonly BusModel _bus;
         private readonly RpcModel _rpc;
 
-        private readonly Router<RoutingData> _router = new Router<RoutingData>();
+        private readonly Router<RoutingData> _router = new Router<RoutingData>(new CompositeRouteSelectionStrategy<RoutingData>(
+            new MatchingRoutesSelectionStrategy<RoutingData>(),
+            new TopScoringRoutesSelectionStrategy<RoutingData>(new RouteScoreComparer()),
+            new RandomRouteSelectionStrategy<RoutingData>()
+        ));
 
         private readonly Logger _logger;
 
@@ -42,27 +47,30 @@ namespace Toxon.Micro.RabbitBlog.Router
                 Execution = request.Execution,
                 Mode = request.Mode,
             });
-            
+
             return true;
         }
 
         public async Task RouteBusMessage(Message message)
         {
-            var route = _router.Match(message);
+            var routes = _router.Match(message);
 
-            _logger.Write(LogEventLevel.Information, "Routing message to {serviceKey} via {routeKey}", route.ServiceKey, route.Data.RouteKey);
+            await Task.WhenAll(routes.Select(route =>
+            {
+                _logger.Write(LogEventLevel.Information, "Routing event to {serviceKey} via {routeKey}", route.ServiceKey, route.Data.RouteKey);
 
-            await _bus.SendAsync(route.Data.RouteKey, message);
+                return _bus.SendAsync(route.Data.RouteKey, message);
+            }));
         }
 
         public async Task<Message> RouteRpcMessage(Message message)
         {
-            var route = _router.Match(message);
+            var route = _router.Match(message).Single();
 
-            _logger.Write(LogEventLevel.Information, "Routing message to {serviceKey} via {routeKey}", route.ServiceKey, route.Data.RouteKey);
+            _logger.Write(LogEventLevel.Information, "Routing rpc call to {serviceKey} via {routeKey}", route.ServiceKey, route.Data.RouteKey);
 
             var response = await _rpc.SendAsync(route.Data.RouteKey, message);
-            
+
             return response;
         }
     }

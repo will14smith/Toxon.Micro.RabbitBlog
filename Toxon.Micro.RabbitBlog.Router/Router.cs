@@ -4,12 +4,19 @@ using System.Linq;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Core.Json;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
+using Toxon.Micro.RabbitBlog.Router.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Router
 {
     internal class Router<TData>
     {
         private readonly List<Entry> _routes = new List<Entry>();
+        private readonly IRouteSelectionStrategy<TData> _routeSelectionStrategy;
+
+        public Router(IRouteSelectionStrategy<TData> routeSelectionStrategy)
+        {
+            _routeSelectionStrategy = routeSelectionStrategy;
+        }
 
         public bool IsRegistered(string serviceKey, IRequestMatcher route)
         {
@@ -35,49 +42,13 @@ namespace Toxon.Micro.RabbitBlog.Router
             public TData Data { get; }
         }
 
-        public Entry Match(Message message)
+        public IReadOnlyCollection<Entry> Match(Message message)
         {
             var fields = JsonMessage.Read<Dictionary<string, object>>(message);
 
             fields = new Dictionary<string, object>(fields, StringComparer.InvariantCultureIgnoreCase);
 
-            return _routes.Single(route => Matches(route.Route, fields));
-        }
-
-        private bool Matches(IRequestMatcher route, IReadOnlyDictionary<string, object> fields)
-        {
-            switch (route)
-            {
-                case AndMatcher andMatcher:
-                    return andMatcher.RequestMatchers.All(matcher => Matches(matcher, fields));
-
-                case FieldMatcher fieldMatcher:
-                    if (!(fields.TryGetValue(fieldMatcher.FieldName, out var fieldValue)))
-                    {
-                        return false;
-                    }
-
-                    return Matches(fieldMatcher.FieldValue, fieldValue);
-
-                default: throw new ArgumentOutOfRangeException(nameof(route));
-            }
-        }
-
-        private bool Matches(IValueMatcher valueMatcher, object value)
-        {
-            switch (valueMatcher)
-            {
-                case AnyValueMatcher _:
-                    return true;
-
-                case EqualityValueMatcher equalityValueMatcher:
-                    return Equals(value, equalityValueMatcher.MatchValue);
-
-                case RegexValueMatcher regexValueMatcher:
-                    throw new NotImplementedException();
-
-                default: throw new ArgumentOutOfRangeException(nameof(valueMatcher));
-            }
+            return _routeSelectionStrategy.Select(_routes, fields);
         }
     }
 
