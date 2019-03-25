@@ -85,10 +85,9 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             return reply;
         }
 
-        public Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
+        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
         {
             return _model.RegisterHandlerAsync(
-                serviceKey,
                 pattern,
                 async message =>
                 {
@@ -106,10 +105,9 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             );
         }
 
-        public Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
+        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
         {
             return _model.RegisterHandlerAsync(
-                serviceKey,
                 pattern,
                 async message =>
                 {

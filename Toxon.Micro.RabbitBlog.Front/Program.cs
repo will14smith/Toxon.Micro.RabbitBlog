@@ -20,7 +20,7 @@ namespace Toxon.Micro.RabbitBlog.Front
 
             Thread.Sleep(1000);
 
-            var model = new RoutingModel(bus.Advanced);
+            var model = new RoutingModel(Startup.ServiceName, bus.Advanced);
 
             new WebHostBuilder()
                 .UseKestrel(k => k.ListenLocalhost(8500))

@@ -22,10 +22,10 @@ namespace Toxon.Micro.RabbitBlog.Post
 
             var logic = new BusinessLogic();
 
-            var model = new RoutingModel(bus.Advanced)
+            var model = new RoutingModel(ServiceName, bus.Advanced)
                 .ConfigureTracing(ServiceName);
 
-            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("post:entry"), (PostEntryRequest request) => logic.HandlePostEntryAsync(model, request));
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("post:entry"), (PostEntryRequest request) => logic.HandlePostEntryAsync(model, request));
 
             Console.WriteLine("Running Post... press enter to exit!");
             Console.ReadLine();

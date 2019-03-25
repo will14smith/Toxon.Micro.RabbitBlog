@@ -25,6 +25,7 @@ namespace Toxon.Micro.RabbitBlog.Router
             var rpc = new RpcModel(rabbitBus.Advanced);
 
             var logic = new BusinessLogic(bus, rpc, logger);
+            logic.Start();
 
             await rpc.RegisterHandlerAsync("toxon.micro.router.register", async requestMessage =>
             {

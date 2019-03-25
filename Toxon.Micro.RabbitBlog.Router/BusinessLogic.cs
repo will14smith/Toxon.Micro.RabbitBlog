@@ -19,6 +19,7 @@ namespace Toxon.Micro.RabbitBlog.Router
             new TopScoringRoutesSelectionStrategy<RoutingData>(new RouteScoreComparer()),
             new RandomRouteSelectionStrategy<RoutingData>()
         ));
+        private readonly ServiceHealthTracker _tracker;
 
         private readonly Logger _logger;
 
@@ -28,7 +29,14 @@ namespace Toxon.Micro.RabbitBlog.Router
             _bus = bus;
             _rpc = rpc;
 
+            _tracker = new ServiceHealthTracker(rpc, logger);
+            
             _logger = logger;
+        }
+
+        public void Start()
+        {
+            _tracker.Start();
         }
 
         public async Task<bool> RegisterRoute(RegisterRouteRequest request)
@@ -47,6 +55,7 @@ namespace Toxon.Micro.RabbitBlog.Router
                 Execution = request.Execution,
                 Mode = request.Mode,
             });
+            await _tracker.RegisterAsync(request.ServiceKey, request.ServiceHealthEndpoint);
 
             return true;
         }

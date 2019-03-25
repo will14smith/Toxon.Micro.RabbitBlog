@@ -8,7 +8,7 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
     {
         Task SendAsync(Message message);
         Task<Message> CallAsync(Message message);
-        Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe);
-        Task RegisterHandlerAsync(string serviceKey, IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture);
+        Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe);
+        Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture);
     }
 }

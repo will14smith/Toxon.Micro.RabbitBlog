@@ -24,29 +24,29 @@ namespace Toxon.Micro.RabbitBlog.Index
 
             var logic = new BusinessLogic();
 
-            var model = new RoutingModel(bus.Advanced)
+            var model = new RoutingModel(ServiceName, bus.Advanced)
                 .ConfigureTracing(ServiceName);
 
-            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request) => logic.HandleInsert(request));
-            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("search:query"), (SearchQueryRequest request) => logic.HandleQuery(request));
-            
-            // translation
-            await model.RegisterHandlerAsync(ServiceName, RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request) =>
-            {
-                var translatedRequest = new SearchInsertRequest
-                {
-                    Kind = "entry",
-                    Id = request.Id,
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request) => logic.HandleInsert(request));
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:query"), (SearchQueryRequest request) => logic.HandleQuery(request));
 
-                    Fields = new Dictionary<string, string>
-                    {
+            // translation
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request) =>
+           {
+               var translatedRequest = new SearchInsertRequest
+               {
+                   Kind = "entry",
+                   Id = request.Id,
+
+                   Fields = new Dictionary<string, string>
+                   {
                         {"User", request.User},
                         {"Text", request.Text},
-                    }
-                };
+                   }
+               };
 
-                return logic.HandleInsert(translatedRequest);
-            });
+               return logic.HandleInsert(translatedRequest);
+           });
 
             Console.WriteLine("Running Index... press enter to exit!");
             Console.ReadLine();

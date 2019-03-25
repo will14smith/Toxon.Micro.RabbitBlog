@@ -15,10 +15,10 @@ namespace Toxon.Micro.RabbitBlog.Front.Http
 {
     public class Startup
     {
-        private const string ServiceName = "front.v1";
+        internal const string ServiceName = "front.v1";
 
         public void Configure(IApplicationBuilder app, IRoutingModel model)
-        {
+        {   
             model = model.ConfigureTracing(ServiceName);
             app.UseTracing(ServiceName);
 
