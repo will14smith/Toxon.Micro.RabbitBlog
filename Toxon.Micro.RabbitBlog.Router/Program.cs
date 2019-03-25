@@ -25,7 +25,6 @@ namespace Toxon.Micro.RabbitBlog.Router
             var rpc = new RpcModel(rabbitBus.Advanced);
 
             var logic = new BusinessLogic(bus, rpc, logger);
-            logic.Start();
 
             await rpc.RegisterHandlerAsync("toxon.micro.router.register", async requestMessage =>
             {
@@ -39,6 +38,8 @@ namespace Toxon.Micro.RabbitBlog.Router
             await bus.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteBusMessage);
             await rpc.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteRpcMessage);
 
+            logic.Start();
+            
             Console.WriteLine("Running Router... press enter to exit!");
             Console.ReadLine();
         }

@@ -38,6 +38,11 @@ namespace Toxon.Micro.RabbitBlog.Router
             return Task.FromResult(true);
         }
 
+        public int GetServiceCount(string serviceKey)
+        {
+            return _nodes.TryGetValue(serviceKey, out var serviceNodes) ? serviceNodes.Count : 0;
+        }
+
         public void Start()
         {
             _healthThread.Start();

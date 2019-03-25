@@ -22,7 +22,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
         {
             var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
 
-            Thread.Sleep(1000);
+            Thread.Sleep(1500);
 
             var model = new RoutingModel(ServiceName, bus.Advanced)
                 .ConfigureTracing(ServiceName);

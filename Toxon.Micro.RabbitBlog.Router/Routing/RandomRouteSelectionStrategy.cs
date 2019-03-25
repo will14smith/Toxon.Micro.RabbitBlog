@@ -9,11 +9,35 @@ namespace Toxon.Micro.RabbitBlog.Router.Routing
     {
         private static int _seed = new Random().Next();
         private static readonly ThreadLocal<Random> Random = new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref _seed)));
-        
+
         public IReadOnlyCollection<Router<TData>.Entry> Select(IReadOnlyCollection<Router<TData>.Entry> entries, IReadOnlyDictionary<string, object> message)
         {
             var index = Random.Value.Next(0, entries.Count);
             return entries.Skip(index).Take(1).ToList();
+        }
+    }
+
+    internal class WeightedRandomRouteSelectionStrategy<TData> : IRouteSelectionStrategy<TData>
+    {
+        private readonly Func<Router<TData>.Entry, int> _weight;
+
+        private readonly RandomRouteSelectionStrategy<TData> _inner = new RandomRouteSelectionStrategy<TData>();
+        
+        public WeightedRandomRouteSelectionStrategy(Func<Router<TData>.Entry, int> weight)
+        {
+            _weight = weight;
+        }
+
+        public IReadOnlyCollection<Router<TData>.Entry> Select(IReadOnlyCollection<Router<TData>.Entry> entries, IReadOnlyDictionary<string, object> message)
+        {
+            var weightedEntries = new List<Router<TData>.Entry>();
+
+            foreach (var entry in entries)
+            {
+                weightedEntries.AddRange(Enumerable.Repeat(entry, _weight(entry)));
+            }
+
+            return _inner.Select(weightedEntries, message);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Toxon.Micro.RabbitBlog.EntryStore
         {
             var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
 
-            Thread.Sleep(1000);
+            Thread.Sleep(1500);
 
             var logic = new BusinessLogic();
             

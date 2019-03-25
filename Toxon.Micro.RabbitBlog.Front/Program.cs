@@ -18,7 +18,7 @@ namespace Toxon.Micro.RabbitBlog.Front
         {
             var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
 
-            Thread.Sleep(1000);
+            Thread.Sleep(1500);
 
             var model = new RoutingModel(Startup.ServiceName, bus.Advanced);
 

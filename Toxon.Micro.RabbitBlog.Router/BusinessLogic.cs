@@ -14,12 +14,8 @@ namespace Toxon.Micro.RabbitBlog.Router
         private readonly BusModel _bus;
         private readonly RpcModel _rpc;
 
-        private readonly Router<RoutingData> _router = new Router<RoutingData>(new CompositeRouteSelectionStrategy<RoutingData>(
-            new MatchingRoutesSelectionStrategy<RoutingData>(),
-            new TopScoringRoutesSelectionStrategy<RoutingData>(new RouteScoreComparer()),
-            new RandomRouteSelectionStrategy<RoutingData>()
-        ));
         private readonly ServiceHealthTracker _tracker;
+        private readonly Router<RoutingData> _router;
 
         private readonly Logger _logger;
 
@@ -30,7 +26,12 @@ namespace Toxon.Micro.RabbitBlog.Router
             _rpc = rpc;
 
             _tracker = new ServiceHealthTracker(rpc, logger);
-            
+            _router = new Router<RoutingData>(new CompositeRouteSelectionStrategy<RoutingData>(
+                new MatchingRoutesSelectionStrategy<RoutingData>(),
+                new TopScoringRoutesSelectionStrategy<RoutingData>(new RouteScoreComparer()),
+                new WeightedRandomRouteSelectionStrategy<RoutingData>(x => _tracker.GetServiceCount(x.ServiceKey))
+            ));
+
             _logger = logger;
         }
 

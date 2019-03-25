@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
@@ -21,6 +22,8 @@ namespace Toxon.Micro.RabbitBlog.Index
         static async Task Main(string[] args)
         {
             var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
+
+            Thread.Sleep(1500);
 
             var logic = new BusinessLogic();
 

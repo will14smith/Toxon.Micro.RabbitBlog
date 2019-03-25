@@ -11,6 +11,8 @@ namespace Toxon.Micro.RabbitBlog.Core
     public class RpcModel 
     {
         private const string ReplyExchangeName = "toxon.micro.rpc.reply";
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(1000);
+        
         private readonly IAdvancedBus _bus;
 
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<Message>> _responseHandlers
@@ -27,7 +29,7 @@ namespace Toxon.Micro.RabbitBlog.Core
         public async Task<Message> SendAsync(string route, Message message, CancellationToken cancellationToken = default)
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            // TODO cts.CancelAfter(200);
+            cts.CancelAfter(DefaultTimeout);
 
             var correlationId = Guid.NewGuid();
             var tcs = new TaskCompletionSource<Message>(TaskCreationOptions.RunContinuationsAsynchronously);
