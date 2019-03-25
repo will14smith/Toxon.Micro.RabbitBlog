@@ -31,7 +31,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
             
             await model.RegisterHandlerAsync(RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
 
-            Console.WriteLine("Running EntryStore... press enter to exit!");
+            Console.WriteLine("Running EntryCache... press enter to exit!");
             Console.ReadLine();
         }
     }

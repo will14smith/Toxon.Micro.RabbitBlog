@@ -66,8 +66,18 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             trace.Record(Annotations.ClientSend());
             trace.Record(Annotations.ServiceName(_serviceName));
             trace.Record(Annotations.Event("TODO"));
-            await _model.SendAsync(newMessage);
-            trace.Record(Annotations.ClientRecv());
+            try
+            {
+                await _model.SendAsync(newMessage);
+                trace.Record(Annotations.ClientRecv());
+            }
+            catch (Exception ex)
+            {
+                trace.Record(Annotations.Tag("error", ex.Message));
+                trace.Record(Annotations.LocalOperationStop());
+
+                throw;
+            }
         }
 
         public async Task<Message> CallAsync(Message message)
@@ -79,10 +89,19 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             trace.Record(Annotations.ClientSend());
             trace.Record(Annotations.ServiceName(_serviceName));
             trace.Record(Annotations.Rpc("TODO"));
-            var reply = await _model.CallAsync(newMessage);
-            trace.Record(Annotations.ClientRecv());
+            try
+            {
+                var reply = await _model.CallAsync(newMessage);
+                trace.Record(Annotations.ClientRecv());
+                return reply;
+            }
+            catch (Exception ex)
+            {
+                trace.Record(Annotations.Tag("error", ex.Message));
+                trace.Record(Annotations.LocalOperationStop());
 
-            return reply;
+                throw;
+            }
         }
 
         public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
@@ -97,8 +116,18 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     trace.Record(Annotations.ServerRecv());
                     trace.Record(Annotations.ServiceName(_serviceName));
                     trace.Record(Annotations.Event("TODO"));
-                    await handler(message);
-                    trace.Record(Annotations.ServerSend());
+                    try
+                    {
+                        await handler(message);
+                        trace.Record(Annotations.ServerSend());
+                    }
+                    catch (Exception ex)
+                    {
+                        trace.Record(Annotations.Tag("error", ex.Message));
+                        trace.Record(Annotations.LocalOperationStop());
+
+                        throw;
+                    }
                 },
                 execution,
                 mode
@@ -117,10 +146,19 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     trace.Record(Annotations.ServerRecv());
                     trace.Record(Annotations.ServiceName(_serviceName));
                     trace.Record(Annotations.Rpc("TODO"));
-                    var response = await handler(message);
-                    trace.Record(Annotations.ServerSend());
+                    try
+                    {
+                        var response = await handler(message);
+                        trace.Record(Annotations.ServerSend());
+                        return response;
+                    }
+                    catch (Exception ex)
+                    {
+                        trace.Record(Annotations.Tag("error", ex.Message));
+                        trace.Record(Annotations.LocalOperationStop());
 
-                    return response;
+                        throw;
+                    }
                 },
                 execution,
                 mode
