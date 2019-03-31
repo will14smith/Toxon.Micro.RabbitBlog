@@ -26,7 +26,7 @@ namespace Toxon.Micro.RabbitBlog.Router
 
             var logic = new BusinessLogic(bus, rpc, logger);
 
-            await rpc.RegisterHandlerAsync("toxon.micro.router.register", async requestMessage =>
+            await rpc.RegisterHandlerAsync("toxon.micro.router.register", async (requestMessage, _) =>
             {
                 var request = JsonMessage.Read<RegisterRouteRequest>(requestMessage);
 
@@ -35,8 +35,8 @@ namespace Toxon.Micro.RabbitBlog.Router
                 return JsonMessage.Write(new RegisterRouteResponse { Done = response });
             });
 
-            await bus.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteBusMessage);
-            await rpc.RegisterHandlerAsync("toxon.micro.router.route", logic.RouteRpcMessage);
+            await bus.RegisterHandlerAsync("toxon.micro.router.route", (message, _) => logic.RouteBusMessage(message));
+            await rpc.RegisterHandlerAsync("toxon.micro.router.route", (message, _) => logic.RouteRpcMessage(message));
 
             logic.Start();
             

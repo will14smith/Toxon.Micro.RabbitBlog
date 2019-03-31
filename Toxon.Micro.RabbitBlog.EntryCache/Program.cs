@@ -29,7 +29,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
 
             var logic = new BusinessLogic(model);
             
-            await model.RegisterHandlerAsync(RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request) => logic.HandleStoreAsync(request));
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("store:*,kind:entry"), (StoreRequest request, CancellationToken _) => logic.HandleStoreAsync(request));
 
             Console.WriteLine("Running EntryCache... press enter to exit!");
             Console.ReadLine();

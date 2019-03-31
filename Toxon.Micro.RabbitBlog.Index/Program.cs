@@ -30,11 +30,11 @@ namespace Toxon.Micro.RabbitBlog.Index
             var model = new RoutingModel(ServiceName, bus.Advanced)
                 .ConfigureTracing(ServiceName);
 
-            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request) => logic.HandleInsert(request));
-            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:query"), (SearchQueryRequest request) => logic.HandleQuery(request));
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:insert"), (SearchInsertRequest request, CancellationToken _) => logic.HandleInsert(request));
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("search:query"), (SearchQueryRequest request, CancellationToken _) => logic.HandleQuery(request));
 
             // translation
-            await model.RegisterHandlerAsync(RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request) =>
+            await model.RegisterHandlerAsync(RouterPatternParser.Parse("info:entry"), (InfoEntryRequest request, CancellationToken _) =>
            {
                var translatedRequest = new SearchInsertRequest
                {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Core.Patterns;
@@ -57,7 +58,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             }
         }
 
-        public async Task SendAsync(Message message)
+        public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
         {
             var trace = Trace.Current.Child();
 
@@ -68,7 +69,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             trace.Record(Annotations.Event("TODO"));
             try
             {
-                await _model.SendAsync(newMessage);
+                await _model.SendAsync(newMessage, cancellationToken);
                 trace.Record(Annotations.ClientRecv());
             }
             catch (Exception ex)
@@ -80,7 +81,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             }
         }
 
-        public async Task<Message> CallAsync(Message message)
+        public async Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
         {
             var trace = Trace.Current.Child();
 
@@ -91,7 +92,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             trace.Record(Annotations.Rpc("TODO"));
             try
             {
-                var reply = await _model.CallAsync(newMessage);
+                var reply = await _model.CallAsync(newMessage, cancellationToken);
                 trace.Record(Annotations.ClientRecv());
                 return reply;
             }
@@ -104,11 +105,11 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             }
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
+        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
             return _model.RegisterHandlerAsync(
                 pattern,
-                async message =>
+                async (message, handlerToken) =>
                 {
                     Trace.Current = ExtractTracing(message);
 
@@ -118,7 +119,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     trace.Record(Annotations.Event("TODO"));
                     try
                     {
-                        await handler(message);
+                        await handler(message, handlerToken);
                         trace.Record(Annotations.ServerSend());
                     }
                     catch (Exception ex)
@@ -130,15 +131,15 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     }
                 },
                 execution,
-                mode
-            );
+                mode, 
+                cancellationToken);
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
+        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
             return _model.RegisterHandlerAsync(
                 pattern,
-                async message =>
+                async (message, handlerToken) =>
                 {
                     Trace.Current = ExtractTracing(message);
 
@@ -148,7 +149,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     trace.Record(Annotations.Rpc("TODO"));
                     try
                     {
-                        var response = await handler(message);
+                        var response = await handler(message, handlerToken);
                         trace.Record(Annotations.ServerSend());
                         return response;
                     }
@@ -161,8 +162,8 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     }
                 },
                 execution,
-                mode
-            );
+                mode,
+                cancellationToken);
         }
 
         private static Message InjectTracing(Message message, Trace trace)

@@ -17,15 +17,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Post
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.EntryStore", "Toxon.Micro.RabbitBlog.EntryStore\Toxon.Micro.RabbitBlog.EntryStore.csproj", "{24AF0388-BB3B-4CEF-A7C8-CCAAC32258C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Index", "Toxon.Micro.RabbitBlog.Index\Toxon.Micro.RabbitBlog.Index.csproj", "{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Index", "Toxon.Micro.RabbitBlog.Index\Toxon.Micro.RabbitBlog.Index.csproj", "{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracing", "Tracing", "{6CF847AC-0485-4988-BCA7-61535459B9F3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{6CF847AC-0485-4988-BCA7-61535459B9F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Zipkin", "Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj", "{5D84F789-F09E-44C4-B789-593C543B154C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Zipkin", "Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj", "{5D84F789-F09E-44C4-B789-593C543B154C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.EntryCache", "Toxon.Micro.RabbitBlog.EntryCache\Toxon.Micro.RabbitBlog.EntryCache.csproj", "{45D9129C-102F-4F98-A155-05D1EBB48549}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.EntryCache", "Toxon.Micro.RabbitBlog.EntryCache\Toxon.Micro.RabbitBlog.EntryCache.csproj", "{45D9129C-102F-4F98-A155-05D1EBB48549}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Router.Tests", "Toxon.Micro.RabbitBlog.Router.Tests\Toxon.Micro.RabbitBlog.Router.Tests.csproj", "{C5169B86-26D0-4451-947B-1F4F79ED2F25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Router.Tests", "Toxon.Micro.RabbitBlog.Router.Tests\Toxon.Micro.RabbitBlog.Router.Tests.csproj", "{C5169B86-26D0-4451-947B-1F4F79ED2F25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFE7D601-2769-4F76-97C2-18D37821D522}"
+	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Resilience", "Toxon.Micro.RabbitBlog.Resilience\Toxon.Micro.RabbitBlog.Resilience.csproj", "{E6D22B59-0495-4FA8-92D2-F012016BE27F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +76,10 @@ Global
 		{C5169B86-26D0-4451-947B-1F4F79ED2F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5169B86-26D0-4451-947B-1F4F79ED2F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5169B86-26D0-4451-947B-1F4F79ED2F25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6D22B59-0495-4FA8-92D2-F012016BE27F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6D22B59-0495-4FA8-92D2-F012016BE27F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6D22B59-0495-4FA8-92D2-F012016BE27F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6D22B59-0495-4FA8-92D2-F012016BE27F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +94,7 @@ Global
 		{5D84F789-F09E-44C4-B789-593C543B154C} = {6CF847AC-0485-4988-BCA7-61535459B9F3}
 		{45D9129C-102F-4F98-A155-05D1EBB48549} = {A98B399C-F325-4710-9A3F-634F11DE923C}
 		{C5169B86-26D0-4451-947B-1F4F79ED2F25} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
+		{E6D22B59-0495-4FA8-92D2-F012016BE27F} = {6CF847AC-0485-4988-BCA7-61535459B9F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {767783F3-D6BC-48BB-A42E-9480E22D56C4}

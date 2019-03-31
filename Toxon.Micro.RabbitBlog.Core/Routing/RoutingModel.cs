@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using Toxon.Micro.RabbitBlog.Core.Json;
@@ -24,16 +25,16 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
             _serviceHealthEndpoint = new Lazy<Task<string>>(InitializeHealthEndpointAsync);
         }
 
-        public async Task SendAsync(Message message)
+        public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
         {
-            await _bus.SendAsync("toxon.micro.router.route", message);
+            await _bus.SendAsync("toxon.micro.router.route", message, cancellationToken);
         }
-        public async Task<Message> CallAsync(Message message)
+        public async Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
         {
-            return await _rpc.SendAsync("toxon.micro.router.route", message);
+            return await _rpc.SendAsync("toxon.micro.router.route", message, cancellationToken);
         }
 
-        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe)
+        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{_serviceKey}-{pattern}";
@@ -48,11 +49,11 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
                 RequestMatcher = pattern,
                 Execution = execution,
                 Mode = mode
-            }));
+            }), cancellationToken);
 
-            await _bus.RegisterHandlerAsync(route, handler);
+            await _bus.RegisterHandlerAsync(route, handler, cancellationToken);
         }
-        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture)
+        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{_serviceKey}-{pattern}";
@@ -67,9 +68,9 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
                 RequestMatcher = pattern,
                 Execution = execution,
                 Mode = mode
-            })).ConfigureAwait(false);
+            }), cancellationToken).ConfigureAwait(false);
 
-            await _rpc.RegisterHandlerAsync(route, handler);
+            await _rpc.RegisterHandlerAsync(route, handler, cancellationToken);
         }
 
         private class RegisterRoute
@@ -97,7 +98,7 @@ namespace Toxon.Micro.RabbitBlog.Core.Routing
             return healthEndpoint;
         }
 
-        private static Task<Message> HandleHealthCheckAsync(Message requestMessage)
+        private static Task<Message> HandleHealthCheckAsync(Message requestMessage, CancellationToken cancellationToken)
         {
             var request = JsonMessage.Read<HealthCheck>(requestMessage);
 

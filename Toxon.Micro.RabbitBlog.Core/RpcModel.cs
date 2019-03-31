@@ -103,7 +103,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             }
         }
 
-        public async Task RegisterHandlerAsync(string route, Func<Message, Task<Message>> handler, CancellationToken cancellationToken = default)
+        public async Task RegisterHandlerAsync(string route, Func<Message, CancellationToken, Task<Message>> handler, CancellationToken cancellationToken = default)
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -114,10 +114,11 @@ namespace Toxon.Micro.RabbitBlog.Core
             _bus.Consume(queue, (body, props, info) => HandleRequestAsync(body, props, handler));
         }
 
-        private async Task HandleRequestAsync(byte[] body, MessageProperties props, Func<Message, Task<Message>> handler)
+        private async Task HandleRequestAsync(byte[] body, MessageProperties props, Func<Message, CancellationToken, Task<Message>> handler)
         {
             var request = Message.FromArgs(body, props);
-            var response = await handler(request);
+            // TODO cancellation token
+            var response = await handler(request, CancellationToken.None);
 
             var exchange = await _bus.ExchangeDeclareAsync(ReplyExchangeName, ExchangeType.Direct, passive: true);
 
