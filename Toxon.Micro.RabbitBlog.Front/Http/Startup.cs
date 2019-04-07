@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Front.Outbound;
 using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Json;
-using Toxon.Micro.RabbitBlog.Zipkin;
 using zipkin4net.Middleware;
 
 namespace Toxon.Micro.RabbitBlog.Front.Http
@@ -19,7 +18,6 @@ namespace Toxon.Micro.RabbitBlog.Front.Http
 
         public void Configure(IApplicationBuilder app, IRoutingModel model)
         {   
-            model = model.ConfigureTracing(ServiceName);
             app.UseTracing(ServiceName);
 
             app.Get("/list", context => HandleList(model, context));

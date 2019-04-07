@@ -7,18 +7,18 @@ using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
 
-namespace Toxon.Micro.RabbitBlog.RouterService
+namespace Toxon.Micro.RabbitBlog.Rabbit
 {
     public class RoutingModel : IRoutingModel
     {
         private readonly string _serviceKey;
-        private readonly BusModel _bus;
-        private readonly RpcModel _rpc;
+        private readonly IBusModel _bus;
+        private readonly IRpcModel _rpc;
 
         private readonly Lazy<Task<string>> _serviceHealthEndpoint;
 
         public RoutingModel(string serviceKey, IAdvancedBus bus) : this(serviceKey, new BusModel(bus), new RpcModel(bus)) { }
-        public RoutingModel(string serviceKey, BusModel bus, RpcModel rpc)
+        public RoutingModel(string serviceKey, IBusModel bus, IRpcModel rpc)
         {
             _serviceKey = serviceKey;
             _bus = bus;

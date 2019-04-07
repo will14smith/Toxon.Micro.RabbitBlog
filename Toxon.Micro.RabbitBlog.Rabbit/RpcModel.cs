@@ -5,14 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.Topology;
+using Toxon.Micro.RabbitBlog.Core;
 
-namespace Toxon.Micro.RabbitBlog.Core
+namespace Toxon.Micro.RabbitBlog.Rabbit
 {
-    public class RpcModel 
+    public class RpcModel : IRpcModel
     {
         private const string ReplyExchangeName = "toxon.micro.rpc.reply";
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(1000);
-        
+
         private readonly IAdvancedBus _bus;
 
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<Message>> _responseHandlers
@@ -94,7 +95,7 @@ namespace Toxon.Micro.RabbitBlog.Core
 
                     if (Guid.TryParse(correlationIdString, out var correlationId) && _responseHandlers.TryRemove(correlationId, out var tcs))
                     {
-                        tcs.SetResult(Message.FromArgs(body, props));
+                        tcs.SetResult(MessageHelpers.FromArgs(body, props));
                     }
                 });
 
@@ -116,7 +117,7 @@ namespace Toxon.Micro.RabbitBlog.Core
 
         private async Task HandleRequestAsync(byte[] body, MessageProperties props, Func<Message, CancellationToken, Task<Message>> handler)
         {
-            var request = Message.FromArgs(body, props);
+            var request = MessageHelpers.FromArgs(body, props);
             // TODO cancellation token
             var response = await handler(request, CancellationToken.None);
 

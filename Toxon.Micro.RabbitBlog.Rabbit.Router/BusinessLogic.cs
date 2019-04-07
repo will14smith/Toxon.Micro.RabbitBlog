@@ -3,24 +3,23 @@ using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
 using Toxon.Micro.RabbitBlog.Core;
-using Toxon.Micro.RabbitBlog.RouterService.Messages;
+using Toxon.Micro.RabbitBlog.Rabbit.Router.Messages;
 using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
 
-namespace Toxon.Micro.RabbitBlog.RouterService
+namespace Toxon.Micro.RabbitBlog.Rabbit.Router
 {
     internal class BusinessLogic
     {
-        private readonly BusModel _bus;
-        private readonly RpcModel _rpc;
+        private readonly IBusModel _bus;
+        private readonly IRpcModel _rpc;
 
         private readonly ServiceHealthTracker _tracker;
         private readonly Router<RoutingData> _router;
 
         private readonly Logger _logger;
 
-        // TODO ideally this wouldn't be coupled so tightly with transport (although it is probably fine in *this* service...)
-        public BusinessLogic(BusModel bus, RpcModel rpc, Logger logger)
+        public BusinessLogic(IBusModel bus, IRpcModel rpc, Logger logger)
         {
             _bus = bus;
             _rpc = rpc;

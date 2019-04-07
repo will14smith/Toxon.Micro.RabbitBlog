@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Rabbit\Toxon.Micro.RabbitBlog.Rabbit.csproj" />
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Routing\Toxon.Micro.RabbitBlog.Routing.csproj" />
   </ItemGroup>
 

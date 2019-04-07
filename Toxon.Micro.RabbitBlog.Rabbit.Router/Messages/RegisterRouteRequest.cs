@@ -1,7 +1,7 @@
 ﻿using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
 
-namespace Toxon.Micro.RabbitBlog.RouterService.Messages
+namespace Toxon.Micro.RabbitBlog.Rabbit.Router.Messages
 {
     internal class RegisterRouteRequest
     {

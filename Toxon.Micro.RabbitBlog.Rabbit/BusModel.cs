@@ -4,10 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.Topology;
+using Toxon.Micro.RabbitBlog.Core;
 
-namespace Toxon.Micro.RabbitBlog.Core
+namespace Toxon.Micro.RabbitBlog.Rabbit
 {
-    public class BusModel
+    public class BusModel : IBusModel
     {
         private readonly IAdvancedBus _bus;
 
@@ -47,7 +48,7 @@ namespace Toxon.Micro.RabbitBlog.Core
             _bus.Bind(exchange, queue, route);
 
             // TODO token passed into handler?
-            _bus.Consume(queue, (body, props, info) => handler(Message.FromArgs(body, props), CancellationToken.None));
+            _bus.Consume(queue, (body, props, info) => handler(MessageHelpers.FromArgs(body, props), CancellationToken.None));
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Toxon.Micro.RabbitBlog.Core
+namespace Toxon.Micro.RabbitBlog.Rabbit
 {
     public sealed class AsyncLock
     {

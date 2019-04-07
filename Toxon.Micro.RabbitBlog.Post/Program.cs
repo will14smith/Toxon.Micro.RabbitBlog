@@ -3,11 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
+using Toxon.Micro.RabbitBlog.All;
 using Toxon.Micro.RabbitBlog.Post.Inbound;
-using Toxon.Micro.RabbitBlog.RouterService;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
-using Toxon.Micro.RabbitBlog.Zipkin;
 
 namespace Toxon.Micro.RabbitBlog.Post
 {
@@ -19,14 +18,9 @@ namespace Toxon.Micro.RabbitBlog.Post
 
         static async Task Main(string[] args)
         {
-            var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
-
-            Thread.Sleep(1500);
+            var model = ModelFactory.Create(ServiceName, RabbitConfig);
 
             var logic = new BusinessLogic();
-
-            var model = new RoutingModel(ServiceName, bus.Advanced)
-                .ConfigureTracing(ServiceName);
 
             await model.RegisterHandlerAsync(RouterPatternParser.Parse("post:entry"), (PostEntryRequest request, CancellationToken _) => logic.HandlePostEntryAsync(model, request));
 

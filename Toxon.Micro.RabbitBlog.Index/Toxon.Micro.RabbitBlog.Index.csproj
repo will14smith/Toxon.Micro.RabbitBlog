@@ -13,9 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
-    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.RouterService\Toxon.Micro.RabbitBlog.RouterService.csproj" />
-    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Routing\Toxon.Micro.RabbitBlog.Routing.csproj" />
-    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.All\Toxon.Micro.RabbitBlog.All.csproj" />
   </ItemGroup>
 </Project>

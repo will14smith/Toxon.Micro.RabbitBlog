@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Toxon.Micro.RabbitBlog.All;
 using Toxon.Micro.RabbitBlog.Front.Http;
-using Toxon.Micro.RabbitBlog.RouterService;
-using Toxon.Micro.RabbitBlog.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Front
 {
@@ -17,15 +15,11 @@ namespace Toxon.Micro.RabbitBlog.Front
 
         static async Task Main(string[] args)
         {
-            var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
-
-            Thread.Sleep(1500);
-
-            var model = new RoutingModel(Startup.ServiceName, bus.Advanced);
-
+            var model = ModelFactory.Create(Startup.ServiceName, RabbitConfig);
+            
             new WebHostBuilder()
                 .UseKestrel(k => k.ListenLocalhost(8500))
-                .ConfigureServices(services => services.AddSingleton<IRoutingModel>(model))
+                .ConfigureServices(services => services.AddSingleton(model))
                 .UseStartup<Startup>()
                 .Start();
 

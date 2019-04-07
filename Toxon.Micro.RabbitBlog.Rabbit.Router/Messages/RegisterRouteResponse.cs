@@ -1,4 +1,4 @@
-﻿namespace Toxon.Micro.RabbitBlog.RouterService.Messages
+﻿namespace Toxon.Micro.RabbitBlog.Rabbit.Router.Messages
 {
     internal class RegisterRouteResponse
     {

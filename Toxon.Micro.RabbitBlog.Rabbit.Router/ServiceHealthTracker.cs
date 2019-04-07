@@ -7,11 +7,11 @@ using Serilog.Core;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 
-namespace Toxon.Micro.RabbitBlog.RouterService
+namespace Toxon.Micro.RabbitBlog.Rabbit.Router
 {
     public class ServiceHealthTracker
     {
-        private readonly RpcModel _rpc;
+        private readonly IRpcModel _rpc;
         private readonly Logger _logger;
 
         private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> _nodes;
@@ -21,7 +21,7 @@ namespace Toxon.Micro.RabbitBlog.RouterService
 
         private long _nonce;
 
-        public ServiceHealthTracker(RpcModel rpc, Logger logger)
+        public ServiceHealthTracker(IRpcModel rpc, Logger logger)
         {
             _rpc = rpc;
             _logger = logger;

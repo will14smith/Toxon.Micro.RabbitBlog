@@ -3,11 +3,10 @@ using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
 using Serilog;
-using Toxon.Micro.RabbitBlog.Core;
-using Toxon.Micro.RabbitBlog.RouterService.Messages;
+using Toxon.Micro.RabbitBlog.Rabbit.Router.Messages;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 
-namespace Toxon.Micro.RabbitBlog.RouterService
+namespace Toxon.Micro.RabbitBlog.Rabbit.Router
 {
     class Program
     {

@@ -3,11 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
+using Toxon.Micro.RabbitBlog.All;
 using Toxon.Micro.RabbitBlog.EntryCache.Messages;
-using Toxon.Micro.RabbitBlog.RouterService;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
-using Toxon.Micro.RabbitBlog.Zipkin;
 using zipkin4net;
 
 namespace Toxon.Micro.RabbitBlog.EntryCache
@@ -20,12 +19,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
 
         static async Task Main(string[] args)
         {
-            var bus = RabbitHutch.CreateBus(RabbitConfig, _ => { });
-
-            Thread.Sleep(1500);
-
-            var model = new RoutingModel(ServiceName, bus.Advanced)
-                .ConfigureTracing(ServiceName);
+            var model = ModelFactory.Create(ServiceName, RabbitConfig);
 
             var logic = new BusinessLogic(model);
             
