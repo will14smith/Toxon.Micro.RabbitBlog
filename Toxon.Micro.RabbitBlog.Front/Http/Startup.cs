@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Toxon.Micro.RabbitBlog.Core.Json;
-using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.Front.Outbound;
+using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Zipkin;
 using zipkin4net.Middleware;
 

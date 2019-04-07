@@ -1,4 +1,4 @@
-﻿using Toxon.Micro.RabbitBlog.Core.Routing;
+﻿using Toxon.Micro.RabbitBlog.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Zipkin
 {

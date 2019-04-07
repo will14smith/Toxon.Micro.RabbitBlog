@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Polly;
 using Toxon.Micro.RabbitBlog.Core;
-using Toxon.Micro.RabbitBlog.Core.Patterns;
-using Toxon.Micro.RabbitBlog.Core.Routing;
+using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Resilience
 {

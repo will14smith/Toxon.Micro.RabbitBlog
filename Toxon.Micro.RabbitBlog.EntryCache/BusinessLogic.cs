@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Toxon.Micro.RabbitBlog.Core.Json;
-using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.EntryCache.Messages;
+using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 
 namespace Toxon.Micro.RabbitBlog.EntryCache
 {

@@ -2,16 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Polly" Version="7.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
-    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Routing\Toxon.Micro.RabbitBlog.Routing.csproj" />
   </ItemGroup>
 
 </Project>

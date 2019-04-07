@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.ConnectionString;
-using Toxon.Micro.RabbitBlog.Core.Json;
-using Toxon.Micro.RabbitBlog.Core.Patterns;
-using Toxon.Micro.RabbitBlog.Core.Routing;
 using Toxon.Micro.RabbitBlog.EntryCache.Messages;
+using Toxon.Micro.RabbitBlog.RouterService;
+using Toxon.Micro.RabbitBlog.Routing.Json;
+using Toxon.Micro.RabbitBlog.Routing.Patterns;
 using Toxon.Micro.RabbitBlog.Zipkin;
 using zipkin4net;
 
