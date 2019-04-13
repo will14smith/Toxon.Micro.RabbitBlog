@@ -8,7 +8,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
     {
         internal static Message FromArgs(byte[] body, MessageProperties properties)
         {
-            var headers = properties.Headers.ToDictionary(x => x.Key, x => x.Value);
+            var headers = properties.Headers.ToDictionary(x => x.Key, x => (byte[])x.Value);
 
             return new Message(body, headers);
         }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EasyNetQ;
-using EasyNetQ.ConnectionString;
 using Toxon.Micro.RabbitBlog.All;
 using Toxon.Micro.RabbitBlog.Post.Inbound;
 using Toxon.Micro.RabbitBlog.Routing.Json;
@@ -14,11 +12,9 @@ namespace Toxon.Micro.RabbitBlog.Post
     {
         private const string ServiceName = "post.v1";
 
-        private static readonly ConnectionConfiguration RabbitConfig = new ConnectionStringParser().Parse("amqp://guest:guest@localhost:5672");
-
         static async Task Main(string[] args)
         {
-            var model = ModelFactory.Create(ServiceName, RabbitConfig);
+            var model = await ModelFactory.CreateAsync(ServiceName);
 
             var logic = new BusinessLogic();
 

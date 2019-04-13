@@ -26,7 +26,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
 
             var properties = new MessageProperties
             {
-                Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value)
+                Headers = message.Headers.ToDictionary(x => x.Key, x => (object)x.Value)
             };
 
             await _bus.PublishAsync(exchange, route, true, properties, message.Body);

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
@@ -10,7 +12,8 @@ namespace Toxon.Micro.RabbitBlog.Routing
 {
     public class Router<TData>
     {
-        private readonly List<Entry> _routes = new List<Entry>();
+        private int _entryCounter;
+        private readonly ConcurrentDictionary<int, Entry> _routes = new ConcurrentDictionary<int, Entry>();
         private readonly IRouteSelectionStrategy<TData> _routeSelectionStrategy;
 
         public Router(IRouteSelectionStrategy<TData> routeSelectionStrategy)
@@ -20,12 +23,25 @@ namespace Toxon.Micro.RabbitBlog.Routing
 
         public bool IsRegistered(string serviceKey, IRequestMatcher route)
         {
-            return _routes.Any(x => x.ServiceKey == serviceKey && RequestMatcherEqualityComparer.Instance.Equals(x.Route, route));
+            return _routes.Values.Any(x => x.ServiceKey == serviceKey && RequestMatcherEqualityComparer.Instance.Equals(x.Route, route));
         }
 
-        public void Register(string serviceKey, IRequestMatcher route, TData data)
+        public int Register(string serviceKey, IRequestMatcher route, TData data)
         {
-            _routes.Add(new Entry(serviceKey, route, data));
+            var entryId = Interlocked.Increment(ref _entryCounter);
+            if (!_routes.TryAdd(entryId, new Entry(serviceKey, route, data)))
+            {
+                throw new InvalidOperationException();
+            }
+            return entryId;
+        }
+
+        public void Unregister(int entryId)
+        {
+            if (!_routes.TryRemove(entryId, out _))
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public class Entry
@@ -48,7 +64,7 @@ namespace Toxon.Micro.RabbitBlog.Routing
 
             fields = new Dictionary<string, object>(fields, StringComparer.InvariantCultureIgnoreCase);
 
-            return _routeSelectionStrategy.Select(_routes, fields);
+            return _routeSelectionStrategy.Select(_routes.Values.ToList(), fields);
         }
     }
 

@@ -47,7 +47,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
                     CorrelationId = correlationId.ToString(),
                     ReplyTo = replyAddress,
 
-                    Headers = message.Headers.ToDictionary(x => x.Key, x => x.Value)
+                    Headers = message.Headers.ToDictionary(x => x.Key, x => (object)x.Value)
                 };
 
                 await _bus.PublishAsync(exchange, route, true, properties, message.Body);
@@ -126,7 +126,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
             var properties = new MessageProperties
             {
                 CorrelationId = props.CorrelationId,
-                Headers = response.Headers.ToDictionary(x => x.Key, x => x.Value)
+                Headers = response.Headers.ToDictionary(x => x.Key, x => (object)x.Value)
             };
 
             await _bus.PublishAsync(exchange,

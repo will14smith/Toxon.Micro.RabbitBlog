@@ -131,7 +131,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                     }
                 },
                 execution,
-                mode, 
+                mode,
                 cancellationToken);
         }
 
@@ -170,7 +170,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
         {
             var headers = message.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
 
-            var injector = Propagations.B3String.Injector<Dictionary<string, object>>((carrier, key, value) => carrier.Add(key, value));
+            var injector = Propagations.B3String.Injector<Dictionary<string, byte[]>>((carrier, key, value) => carrier.Add(key, Encoding.UTF8.GetBytes(value)));
             injector.Inject(trace.CurrentSpan, headers);
 
             return new Message(message.Body, headers);
@@ -178,20 +178,7 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
 
         private static Trace ExtractTracing(Message message)
         {
-            var extractor = Propagations.B3String.Extractor<IReadOnlyDictionary<string, object>>((carrier, key) =>
-            {
-                if (!carrier.TryGetValue(key, out var value))
-                {
-                    return null;
-                }
-
-                if (value is byte[] bytes)
-                {
-                    return Encoding.UTF8.GetString(bytes);
-                }
-
-                return (string) value;
-            });
+            var extractor = Propagations.B3String.Extractor<IReadOnlyDictionary<string, byte[]>>((carrier, key) => carrier.TryGetValue(key, out var value) ? Encoding.UTF8.GetString(value) : null);
 
             var traceContext = extractor.Extract(message.Headers);
             return traceContext == null ? Trace.Create() : Trace.CreateFromId(traceContext);

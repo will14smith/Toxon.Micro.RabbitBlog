@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Core\Toxon.Micro.RabbitBlog.Core.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Mesh\Toxon.Micro.RabbitBlog.Mesh.csproj" />
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Rabbit\Toxon.Micro.RabbitBlog.Rabbit.csproj" />
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Resilience\Toxon.Micro.RabbitBlog.Resilience.csproj" />
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Routing\Toxon.Micro.RabbitBlog.Routing.csproj" />

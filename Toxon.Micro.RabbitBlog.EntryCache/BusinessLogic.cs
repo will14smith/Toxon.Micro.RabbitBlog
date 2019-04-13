@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.EntryCache.Messages;
 using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Json;
@@ -14,9 +15,20 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
             _model = model;
         }
 
-        public Task<EntryResponse> HandleStoreAsync(StoreRequest request)
+        public async Task<object> HandleStoreAsync(StoreRequest request)
         {
-            return _model.CallAsync<EntryResponse>(new UncachedStoreRequest
+            if (request.Store == "list")
+            {
+                return await _model.CallAsync<List<EntryResponse>>(new UncachedStoreRequest
+                {
+                    Store = request.Store,
+
+                    User = request.User,
+                    Text = request.Text,
+                });
+            }
+
+            return await _model.CallAsync<EntryResponse>(new UncachedStoreRequest
             {
                 Store = request.Store,
 
