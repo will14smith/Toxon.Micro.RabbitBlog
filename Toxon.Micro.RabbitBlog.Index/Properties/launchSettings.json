@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Toxon.Micro.RabbitBlog.Index": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "\"../../../../Toxon.Micro.RabbitBlog.Mesh.Host/bin/Debug/netcoreapp2.2/Toxon.Micro.RabbitBlog.Mesh.Host.dll\" \"Toxon.Micro.RabbitBlog.Index.dll\""
+    }
+  }
+}

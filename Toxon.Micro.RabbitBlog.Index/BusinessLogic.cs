@@ -7,10 +7,12 @@ using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Toxon.Micro.RabbitBlog.Index.Inbound;
+using Toxon.Micro.RabbitBlog.Plugins.Core;
 
 namespace Toxon.Micro.RabbitBlog.Index
 {
-    public class BusinessLogic
+    [MessagePlugin("index.v1")]
+    internal class BusinessLogic
     {
         private readonly IndexWriter _writer;
 
@@ -25,6 +27,7 @@ namespace Toxon.Micro.RabbitBlog.Index
             _writer = new IndexWriter(dir, indexConfig);
         }
 
+        [MessageRoute("search:insert")]
         public Task HandleInsert(SearchInsertRequest message)
         {
             var document = new Lucene.Net.Documents.Document
@@ -44,6 +47,7 @@ namespace Toxon.Micro.RabbitBlog.Index
             return Task.CompletedTask;
         }
 
+        [MessageRoute("search:query")]
         public Task<SearchQueryResponse> HandleQuery(SearchQueryRequest message)
         {
             var query = new BooleanQuery

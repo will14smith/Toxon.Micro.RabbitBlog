@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.EntryStore.Inbound;
+using Toxon.Micro.RabbitBlog.Plugins.Core;
 
 namespace Toxon.Micro.RabbitBlog.EntryStore
 {
+    [MessagePlugin("entry-store.v2")]
     internal class BusinessLogic
     {
         private readonly List<EntryResponse> _entries = new List<EntryResponse>();
 
+        [MessageRoute("store:*,kind:entry,cache:true")]
+        [MessageRoute("store:*,kind:entry")]
         public async Task<object> HandleStoreAsync(StoreRequest message)
         {
             switch (message.Store)

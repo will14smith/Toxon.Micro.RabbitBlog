@@ -39,6 +39,8 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             {
                 await RegisterRouteAsync(model, plugin, route);
             }
+
+            StartPlugin(pluginMetadata, plugin);
         }
 
         private static object CreatePlugin(PluginMetadata metadata, IRoutingModel model)
@@ -73,6 +75,26 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             {
                 var handler = RouteHandlerFactory.BuildBusHandler(plugin, route);
                 await model.RegisterHandlerAsync(pattern, new Func<Message, CancellationToken, Task>(handler));
+            }
+        }
+
+        private static void StartPlugin(PluginMetadata metadata, object plugin)
+        {
+            var methods = metadata.Type.GetMethods();
+            foreach (var method in methods)
+            {
+                var startAttribute = method.GetCustomAttribute<PluginStartAttribute>();
+                if (startAttribute == null)
+                {
+                    continue;
+                }
+
+                if (method.GetParameters().Length != 0)
+                {
+                    throw new InvalidOperationException("Cannot call start plugin method with parameters");
+                }
+
+                method.Invoke(plugin, null);
             }
         }
     }

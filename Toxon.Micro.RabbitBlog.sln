@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{A98B399C-F325-4710-9A3F-634F11DE923C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Front", "Toxon.Micro.RabbitBlog.Front\Toxon.Micro.RabbitBlog.Front.csproj", "{9C2338DC-DE2F-47FF-830B-7CFDAFA843E1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {DBE5CF12-8680-427A-87B9-66BA4AAE2729}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Post", "Toxon.Micro.RabbitBlog.Post\Toxon.Micro.RabbitBlog.Post.csproj", "{EA5B69EC-5C24-4EDC-B369-D472607E6912}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -17,14 +20,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Post
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.EntryStore", "Toxon.Micro.RabbitBlog.EntryStore\Toxon.Micro.RabbitBlog.EntryStore.csproj", "{24AF0388-BB3B-4CEF-A7C8-CCAAC32258C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {DBE5CF12-8680-427A-87B9-66BA4AAE2729}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Index", "Toxon.Micro.RabbitBlog.Index\Toxon.Micro.RabbitBlog.Index.csproj", "{B08EE19C-DAB6-42DF-BB08-B431C15CA0A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {DBE5CF12-8680-427A-87B9-66BA4AAE2729}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{6CF847AC-0485-4988-BCA7-61535459B9F3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Zipkin", "Toxon.Micro.RabbitBlog.Zipkin\Toxon.Micro.RabbitBlog.Zipkin.csproj", "{5D84F789-F09E-44C4-B789-593C543B154C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.EntryCache", "Toxon.Micro.RabbitBlog.EntryCache\Toxon.Micro.RabbitBlog.EntryCache.csproj", "{45D9129C-102F-4F98-A155-05D1EBB48549}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {DBE5CF12-8680-427A-87B9-66BA4AAE2729}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFE7D601-2769-4F76-97C2-18D37821D522}"
 	ProjectSection(SolutionItems) = preProject
