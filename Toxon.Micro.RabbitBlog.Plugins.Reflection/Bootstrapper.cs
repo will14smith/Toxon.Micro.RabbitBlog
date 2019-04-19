@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core;
+using Toxon.Micro.RabbitBlog.Plugins.Core;
 using Toxon.Micro.RabbitBlog.Routing;
 
 namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
@@ -17,17 +19,12 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             return model;
         }
 
-        public static IReadOnlyCollection<Assembly> LoadAssembly(string assemblyPath)
+        public static IReadOnlyCollection<PluginLoader> LoadPlugins(IReadOnlyCollection<string> pluginPaths)
         {
-            if (!Path.IsPathRooted(assemblyPath))
-            {
-                assemblyPath = Path.Combine(Environment.CurrentDirectory, assemblyPath);
-            }
-
-            return new[]
-            {
-                Assembly.LoadFile(assemblyPath),
-            };
+            return pluginPaths
+                .Select(x => !Path.IsPathRooted(x) ? Path.Combine(Environment.CurrentDirectory, x) : x)
+                .Select(x => new PluginLoader(x))
+                .ToList();
         }
 
         public static async Task RegisterPluginAsync(IRoutingModel model, PluginMetadata pluginMetadata)

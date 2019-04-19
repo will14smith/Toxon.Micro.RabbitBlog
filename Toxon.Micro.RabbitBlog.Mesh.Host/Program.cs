@@ -23,7 +23,8 @@ namespace Toxon.Micro.RabbitBlog.Mesh.Host
         {
             var wellKnownBases = new WellKnownBases(opts.BaseAddresses);
 
-            var assembly = Bootstrapper.LoadAssembly(opts.AssemblyPath);
+            var pluginLoaders = Bootstrapper.LoadPlugins(new [] { opts.AssemblyPath });
+            var assembly = pluginLoaders.Single().Assembly;
             var plugins = PluginDiscoverer.Discover(assembly);
 
             var models = new List<RoutingModel>();
