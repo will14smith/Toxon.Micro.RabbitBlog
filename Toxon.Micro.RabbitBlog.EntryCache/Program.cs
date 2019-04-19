@@ -15,7 +15,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
 
         static async Task Main(string[] args)
         {
-            var model = await ModelFactory.CreateAsync(ServiceName);
+            var model = await MeshFactory.CreateAsync(ServiceName);
 
             var logic = new BusinessLogic(model);
             

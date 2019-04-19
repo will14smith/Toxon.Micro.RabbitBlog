@@ -11,7 +11,7 @@ using Toxon.Swim.Models;
 
 namespace Toxon.Micro.RabbitBlog.All
 {
-    public static class ModelFactory
+    public static class MeshFactory
     {
         private class WellKnownHost : ISwimBootstrapper
         {

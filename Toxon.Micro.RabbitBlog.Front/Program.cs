@@ -11,7 +11,7 @@ namespace Toxon.Micro.RabbitBlog.Front
     {
         static async Task Main(string[] args)
         {
-            var model = await ModelFactory.CreateAsync(Startup.ServiceName);
+            var model = await MeshFactory.CreateAsync(Startup.ServiceName);
             
             new WebHostBuilder()
                 .UseKestrel(k => k.ListenLocalhost(8500))
