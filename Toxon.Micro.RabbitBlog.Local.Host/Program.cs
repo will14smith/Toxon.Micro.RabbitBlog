@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Plugins.Reflection;
 
@@ -20,7 +19,7 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
             var model = new LocalModel();
             foreach (var plugin in plugins)
             {
-                await Bootstrapper.RegisterPluginAsync(model, plugin);
+                await Bootstrapper.RegisterPluginAsync(model, model, plugin);
             }
 
             Console.WriteLine($"Running {string.Join(", ", plugins.Select(x => x.ServiceKey))}... press enter to exit!");

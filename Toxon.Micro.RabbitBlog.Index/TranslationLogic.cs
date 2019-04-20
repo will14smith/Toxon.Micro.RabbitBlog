@@ -11,11 +11,11 @@ namespace Toxon.Micro.RabbitBlog.Index
     [MessagePlugin("index-translator.v1")]
     internal class TranslationLogic
     {
-        private readonly IRoutingModel _model;
+        private readonly IRoutingSender _sender;
 
-        public TranslationLogic(IRoutingModel model)
+        public TranslationLogic(IRoutingSender sender)
         {
-            _model = model;
+            _sender = sender;
         }
 
         [MessageRoute("info:entry")]
@@ -33,7 +33,7 @@ namespace Toxon.Micro.RabbitBlog.Index
                 }
             };
 
-            return _model.SendAsync(translatedRequest);
+            return _sender.SendAsync(translatedRequest);
         }
     }
 }

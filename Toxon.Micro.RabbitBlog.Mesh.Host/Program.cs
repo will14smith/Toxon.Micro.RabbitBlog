@@ -32,9 +32,7 @@ namespace Toxon.Micro.RabbitBlog.Mesh.Host
                 var model = new RoutingModel(plugin.ServiceKey, wellKnownBases, new RoutingModelOptions());
                 models.Add(model);
 
-                var configuredModel = Bootstrapper.ConfigureModel(model);
-
-                await Bootstrapper.RegisterPluginAsync(configuredModel, plugin);
+                await Bootstrapper.RegisterPluginAsync(model, model, plugin);
             }
 
             Thread.Sleep(TimeSpan.FromMilliseconds(1500));

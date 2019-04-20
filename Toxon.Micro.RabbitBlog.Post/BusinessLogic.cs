@@ -10,23 +10,23 @@ namespace Toxon.Micro.RabbitBlog.Post
     [MessagePlugin("post.v1")]
     internal class BusinessLogic
     {
-        private readonly IRoutingModel _model;
+        private readonly IRoutingSender _sender;
 
-        public BusinessLogic(IRoutingModel model)
+        public BusinessLogic(IRoutingSender sender)
         {
-            _model = model;
+            _sender = sender;
         }
 
         [MessageRoute("post:entry")]
         public async Task<PostEntryResponse> HandlePostEntryAsync(PostEntryRequest message)
         {
-            var saveResponse = await _model.CallAsync<SaveEntryResponse>(new SaveEntryRequest
+            var saveResponse = await _sender.CallAsync<SaveEntryResponse>(new SaveEntryRequest
             {
                 User = message.User,
                 Text = message.Text,
             });
 
-            await _model.SendAsync(new InfoEntryBroadcast
+            await _sender.SendAsync(new InfoEntryBroadcast
             {
                 Id = saveResponse.Id,
 

@@ -16,18 +16,18 @@ namespace Toxon.Micro.RabbitBlog.Front.Http
     {
         internal const string ServiceName = "front.v1";
 
-        public void Configure(IApplicationBuilder app, IRoutingModel model)
+        public void Configure(IApplicationBuilder app, IRoutingSender sender)
         {   
             app.UseTracing(ServiceName);
 
-            app.Get("/list", context => HandleList(model, context));
-            app.Get("/search", context => HandleSearch(model, context));
-            app.Post("/new", context => HandleNewAsync(model, context));
+            app.Get("/list", context => HandleList(sender, context));
+            app.Get("/search", context => HandleSearch(sender, context));
+            app.Post("/new", context => HandleNewAsync(sender, context));
         }
 
-        private static async Task HandleList(IRoutingModel model, HttpContext context)
+        private static async Task HandleList(IRoutingSender sender, HttpContext context)
         {
-            var entries = await model.CallAsync<List<EntryResponse>>(new ListEntriesFromStore());
+            var entries = await sender.CallAsync<List<EntryResponse>>(new ListEntriesFromStore());
             var response = entries.Select(entry => new Entry
             {
                 Id = entry.Id,
@@ -38,10 +38,10 @@ namespace Toxon.Micro.RabbitBlog.Front.Http
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
 
-        private static async Task HandleSearch(IRoutingModel model, HttpContext context)
+        private static async Task HandleSearch(IRoutingSender sender, HttpContext context)
         {
             var query = context.Request.Query["q"];
-            var searchResponse = await model.CallAsync<SearchResponse>(new SearchRequest { Kind = "entry", Query = query });
+            var searchResponse = await sender.CallAsync<SearchResponse>(new SearchRequest { Kind = "entry", Query = query });
             var response = searchResponse.Results.Select(result => new SearchResult
             {
                 Score = result.Score,
@@ -56,11 +56,11 @@ namespace Toxon.Micro.RabbitBlog.Front.Http
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
 
-        private static async Task HandleNewAsync(IRoutingModel model, HttpContext context)
+        private static async Task HandleNewAsync(IRoutingSender sender, HttpContext context)
         {
             var input = JsonSerializer.Create().Deserialize<EntryInput>(new JsonTextReader(new StreamReader(context.Request.Body)));
 
-            var entry = await model.CallAsync<EntryCreateResponse>(new SaveEntryToStore
+            var entry = await sender.CallAsync<EntryCreateResponse>(new SaveEntryToStore
             {
                 User = input.User,
                 Text = input.Text,

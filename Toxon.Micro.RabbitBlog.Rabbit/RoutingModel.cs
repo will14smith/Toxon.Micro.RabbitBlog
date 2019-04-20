@@ -9,7 +9,7 @@ using Toxon.Micro.RabbitBlog.Routing.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Rabbit
 {
-    public class RoutingModel : IRoutingModel
+    public class RoutingModel : IRoutingSender, IRoutingRegistration
     {
         private readonly string _serviceKey;
         private readonly IBusModel _bus;

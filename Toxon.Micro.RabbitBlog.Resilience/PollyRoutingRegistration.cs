@@ -8,35 +8,23 @@ using Toxon.Micro.RabbitBlog.Routing.Patterns;
 
 namespace Toxon.Micro.RabbitBlog.Resilience
 {
-    public class PollyRoutingModel : IRoutingModel
+    public class PollyRoutingRegistration : IRoutingRegistration
     {
-        private readonly IRoutingModel _model;
+        private readonly IRoutingRegistration _registration;
         private readonly AsyncPolicy _policy;
 
-        public PollyRoutingModel(IRoutingModel model, AsyncPolicy policy)
+        public PollyRoutingRegistration(IRoutingRegistration registration, AsyncPolicy policy)
         {
-            _model = model;
+            _registration = registration;
             _policy = policy;
-        }
-
-        public Task SendAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            return _policy.ExecuteAsync((_, policyToken) => _model.SendAsync(message, policyToken), new Context(), cancellationToken);
-        }
-
-        public Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            return _policy
-                .AsAsyncPolicy<Message>()
-                .ExecuteAsync((_, policyToken) => _model.CallAsync(message, policyToken), new Context(), cancellationToken);
         }
 
         public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
-            return _policy.ExecuteAsync((_, registerPolicyToken) => _model.RegisterHandlerAsync(
+            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterHandlerAsync(
                 pattern,
                 (message, handlerToken) => _policy.ExecuteAsync((__, handlerPolicyToken) => handler(message, handlerPolicyToken), new Context(), handlerToken),
-                execution, 
+                execution,
                 mode,
                 registerPolicyToken
             ), new Context(), cancellationToken);
@@ -44,7 +32,7 @@ namespace Toxon.Micro.RabbitBlog.Resilience
 
         public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
-            return _policy.ExecuteAsync((_, registerPolicyToken) => _model.RegisterHandlerAsync(
+            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterHandlerAsync(
                 pattern,
                 (message, handlerToken) => _policy.AsAsyncPolicy<Message>().ExecuteAsync((__, handlerPolicyToken) => handler(message, handlerPolicyToken), new Context(), handlerToken),
                 execution,
@@ -53,4 +41,5 @@ namespace Toxon.Micro.RabbitBlog.Resilience
             ), new Context(), cancellationToken);
         }
     }
+
 }

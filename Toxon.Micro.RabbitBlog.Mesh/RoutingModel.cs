@@ -21,7 +21,7 @@ using Toxon.Swim.Models;
 
 namespace Toxon.Micro.RabbitBlog.Mesh
 {
-    public class RoutingModel : IRoutingModel
+    public class RoutingModel : IRoutingSender, IRoutingRegistration
     {
         private const byte InboundType = 1;
         private const byte ResponseType = 2;

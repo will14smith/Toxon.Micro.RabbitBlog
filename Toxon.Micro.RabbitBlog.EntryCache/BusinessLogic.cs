@@ -10,11 +10,11 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
     [MessagePlugin("entry-cache.v1")]
     internal class BusinessLogic
     {
-        private readonly IRoutingModel _model;
+        private readonly IRoutingSender _sender;
 
-        public BusinessLogic(IRoutingModel model)
+        public BusinessLogic(IRoutingSender sender)
         {
-            _model = model;
+            _sender = sender;
         }
 
         [MessageRoute("store:*,kind:entry")]
@@ -22,7 +22,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
         {
             if (request.Store == "list")
             {
-                return await _model.CallAsync<List<EntryResponse>>(new UncachedStoreRequest
+                return await _sender.CallAsync<List<EntryResponse>>(new UncachedStoreRequest
                 {
                     Store = request.Store,
 
@@ -31,7 +31,7 @@ namespace Toxon.Micro.RabbitBlog.EntryCache
                 });
             }
 
-            return await _model.CallAsync<EntryResponse>(new UncachedStoreRequest
+            return await _sender.CallAsync<EntryResponse>(new UncachedStoreRequest
             {
                 Store = request.Store,
 

@@ -10,13 +10,13 @@ namespace Toxon.Micro.RabbitBlog.Front
     [MessagePlugin("front.v2")]
     internal class Plugin
     {
-        private readonly IRoutingModel _model;
+        private readonly IRoutingSender _sender;
 
         private IWebHost _webHost;
 
-        public Plugin(IRoutingModel model)
+        public Plugin(IRoutingSender sender)
         {
-            _model = model;
+            _sender = sender;
         }
 
         [PluginStart]
@@ -24,7 +24,7 @@ namespace Toxon.Micro.RabbitBlog.Front
         {
             _webHost = new WebHostBuilder()
                 .UseKestrel(k => k.ListenLocalhost(8500))
-                .ConfigureServices(services => services.AddSingleton(_model))
+                .ConfigureServices(services => services.AddSingleton(_sender))
                 .UseStartup<Startup>()
                 .Start();
         }

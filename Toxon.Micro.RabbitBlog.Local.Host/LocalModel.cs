@@ -9,7 +9,7 @@ using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
 
 namespace Toxon.Micro.RabbitBlog.Local.Host
 {
-    internal class LocalModel : IRoutingModel
+    internal class LocalModel : IRoutingSender, IRoutingRegistration
     {
         private readonly Router<BusRoutingData> _busRouter = CreateRouter<BusRoutingData>();
         private readonly Router<RpcRoutingData> _rpcRouter = CreateRouter<RpcRoutingData>();

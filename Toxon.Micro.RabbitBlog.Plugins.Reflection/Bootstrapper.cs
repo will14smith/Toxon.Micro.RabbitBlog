@@ -13,12 +13,6 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
     public static class Bootstrapper
     {
-        public static IRoutingModel ConfigureModel(IRoutingModel model)
-        {
-            // TODO add tracing & retry
-            return model;
-        }
-
         public static PluginLoader LoadPlugins(IReadOnlyCollection<string> pluginPaths)
         {
             var rootedPluginPaths = pluginPaths
@@ -27,27 +21,27 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             return new PluginLoader(rootedPluginPaths);
         }
 
-        public static async Task RegisterPluginAsync(IRoutingModel model, PluginMetadata pluginMetadata)
+        public static async Task RegisterPluginAsync(IRoutingSender sender, IRoutingRegistration registration, PluginMetadata pluginMetadata)
         {
-            var plugin = CreatePlugin(pluginMetadata, model);
+            var plugin = CreatePlugin(pluginMetadata, sender);
 
             var routes = RouteDiscoverer.Discover(pluginMetadata);
             foreach (var route in routes)
             {
-                await RegisterRouteAsync(model, plugin, route);
+                await RegisterRouteAsync(registration, plugin, route);
             }
 
             StartPlugin(pluginMetadata, plugin);
         }
 
-        private static object CreatePlugin(PluginMetadata metadata, IRoutingModel model)
+        private static object CreatePlugin(PluginMetadata metadata, IRoutingSender sender)
         {
             var type = metadata.Type;
 
-            var constructor = type.GetConstructor(new[] { typeof(IRoutingModel) });
+            var constructor = type.GetConstructor(new[] { typeof(IRoutingSender) });
             if (constructor != null)
             {
-                return constructor.Invoke(new object[] { model });
+                return constructor.Invoke(new object[] { sender });
             }
 
             constructor = type.GetConstructor(new Type[0]);
@@ -59,7 +53,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             throw new InvalidOperationException("Cannot activate the plugin, missing compatible constructor");
         }
 
-        private static async Task RegisterRouteAsync(IRoutingModel model, object plugin, RouteMetadata route)
+        private static async Task RegisterRouteAsync(IRoutingRegistration model, object plugin, RouteMetadata route)
         {
             var pattern = route.Route;
 
