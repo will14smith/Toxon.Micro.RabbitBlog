@@ -8,7 +8,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
     public static class PluginDiscoverer
     {
-        public static IReadOnlyCollection<PluginMetadata> Discover(IReadOnlyCollection<Assembly> assemblies)
+        public static IReadOnlyCollection<PluginMetadata> Discover(IEnumerable<Assembly> assemblies)
         {
             return assemblies.SelectMany(Discover).ToList();
         }

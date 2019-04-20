@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.Extensions.DependencyModel;
@@ -12,26 +11,62 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
     public class PluginLoader : IDisposable
     {
-        public Assembly Assembly { get; }
+        public IReadOnlyCollection<Assembly> Assemblies { get; }
 
         private readonly DependencyContext _deps;
         private readonly ICompilationAssemblyResolver _resolver;
-        private readonly AssemblyLoadContext _loader;
+        private readonly IReadOnlyCollection<AssemblyLoadContext> _loaders;
 
-        public PluginLoader(string pluginPath)
+        public PluginLoader(IEnumerable<string> pluginPaths)
         {
-            Assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(pluginPath);
+            var pluginPathsList = pluginPaths.ToList();
 
-            _deps = DependencyContext.Load(Assembly);
-            _resolver = new CompositeCompilationAssemblyResolver(new ICompilationAssemblyResolver[]
+            Assemblies = pluginPathsList.Select(pluginPath => AssemblyLoadContext.Default.LoadFromAssemblyPath(pluginPath)).ToList();
+
+            var result = DependencyContext.Default;
+            foreach (var assembly in Assemblies)
             {
-                new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(pluginPath)),
-                new ReferenceAssemblyPathResolver(),
-                new PackageCompilationAssemblyResolver(),
-            });
-            _loader = AssemblyLoadContext.GetLoadContext(Assembly);
+                var context = DependencyContext.Load(assembly);
+                if (context == null)
+                {
+                    continue;
+                }
 
-            _loader.Resolving += OnResolving;
+                result = result.Merge(context);
+            }
+            _deps = result;
+            _resolver = new CompositeCompilationAssemblyResolver(BuildResolvers(pluginPathsList));
+            _loaders = BuildLoaders(Assemblies);
+        }
+
+        private static ICompilationAssemblyResolver[] BuildResolvers(IEnumerable<string> pluginPathsList)
+        {
+            var resolvers = pluginPathsList
+                .Select(Path.GetDirectoryName)
+                .Distinct(StringComparer.InvariantCultureIgnoreCase)
+                .Select(directory => new AppBaseCompilationAssemblyResolver(directory))
+                .Cast<ICompilationAssemblyResolver>()
+                .ToList();
+
+            resolvers.Add(new ReferenceAssemblyPathResolver());
+            resolvers.Add(new PackageCompilationAssemblyResolver());
+
+            return resolvers.ToArray();
+        }
+
+        private IReadOnlyCollection<AssemblyLoadContext> BuildLoaders(IEnumerable<Assembly> assemblies)
+        {
+            var loaders = new List<AssemblyLoadContext>();
+            foreach (var assembly in assemblies)
+            {
+                var loader = AssemblyLoadContext.GetLoadContext(assembly);
+
+                loader.Resolving += OnResolving;
+
+                loaders.Add(loader);
+            }
+
+            return loaders;
         }
 
         private Assembly OnResolving(AssemblyLoadContext loader, AssemblyName name)
@@ -43,7 +78,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             }
 
             var compilationLibrary = ToCompilationLibrary(library);
-
+            
             var assemblies = new List<string>();
             if (!_resolver.TryResolveAssemblyPaths(compilationLibrary, assemblies))
             {
@@ -52,7 +87,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 
             var assembly = assemblies.Single();
 
-            return _loader.LoadFromAssemblyPath(assembly);
+            return loader.LoadFromAssemblyPath(assembly);
         }
 
         private CompilationLibrary ToCompilationLibrary(RuntimeLibrary library)
@@ -72,7 +107,10 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 
         public void Dispose()
         {
-            _loader.Resolving -= OnResolving;
+            foreach (var loader in _loaders)
+            {
+                loader.Resolving -= OnResolving;
+            }
         }
     }
 }

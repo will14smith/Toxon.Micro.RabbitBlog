@@ -19,12 +19,12 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             return model;
         }
 
-        public static IReadOnlyCollection<PluginLoader> LoadPlugins(IReadOnlyCollection<string> pluginPaths)
+        public static PluginLoader LoadPlugins(IReadOnlyCollection<string> pluginPaths)
         {
-            return pluginPaths
-                .Select(x => !Path.IsPathRooted(x) ? Path.Combine(Environment.CurrentDirectory, x) : x)
-                .Select(x => new PluginLoader(x))
-                .ToList();
+            var rootedPluginPaths = pluginPaths
+                .Select(x => !Path.IsPathRooted(x) ? Path.Combine(Environment.CurrentDirectory, x) : x);
+
+            return new PluginLoader(rootedPluginPaths);
         }
 
         public static async Task RegisterPluginAsync(IRoutingModel model, PluginMetadata pluginMetadata)
