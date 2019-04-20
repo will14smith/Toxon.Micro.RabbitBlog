@@ -63,11 +63,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Mesh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Mesh.Base", "Toxon.Micro.RabbitBlog.Mesh.Base\Toxon.Micro.RabbitBlog.Mesh.Base.csproj", "{CE849725-3777-449A-B60D-5811BDBA6852}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Plugins.Core", "Toxon.Micro.RabbitBlog.Plugins.Core\Toxon.Micro.RabbitBlog.Plugins.Core.csproj", "{D05C133A-D98E-4DC7-95B8-3A79315895A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Plugins.Core", "Toxon.Micro.RabbitBlog.Plugins.Core\Toxon.Micro.RabbitBlog.Plugins.Core.csproj", "{D05C133A-D98E-4DC7-95B8-3A79315895A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Plugins.Reflection", "Toxon.Micro.RabbitBlog.Plugins.Reflection\Toxon.Micro.RabbitBlog.Plugins.Reflection.csproj", "{9BE402D5-7BAA-49B5-9AC3-120324493888}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Plugins.Reflection", "Toxon.Micro.RabbitBlog.Plugins.Reflection\Toxon.Micro.RabbitBlog.Plugins.Reflection.csproj", "{9BE402D5-7BAA-49B5-9AC3-120324493888}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Mesh.Host", "Toxon.Micro.RabbitBlog.Mesh.Host\Toxon.Micro.RabbitBlog.Mesh.Host.csproj", "{DBE5CF12-8680-427A-87B9-66BA4AAE2729}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Mesh.Host", "Toxon.Micro.RabbitBlog.Mesh.Host\Toxon.Micro.RabbitBlog.Mesh.Host.csproj", "{DBE5CF12-8680-427A-87B9-66BA4AAE2729}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local", "Local", "{B50AF19F-EEA6-4DB2-8C54-0360E4109AA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Local.Host", "Toxon.Micro.RabbitBlog.Local.Host\Toxon.Micro.RabbitBlog.Local.Host.csproj", "{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,6 +151,10 @@ Global
 		{DBE5CF12-8680-427A-87B9-66BA4AAE2729}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBE5CF12-8680-427A-87B9-66BA4AAE2729}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBE5CF12-8680-427A-87B9-66BA4AAE2729}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -169,10 +177,11 @@ Global
 		{B168D901-B604-49D3-BE5E-874F7C96C8E4} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
 		{6DC0170E-48E6-46A7-9B07-937402D2B7CF} = {B168D901-B604-49D3-BE5E-874F7C96C8E4}
 		{CE849725-3777-449A-B60D-5811BDBA6852} = {B168D901-B604-49D3-BE5E-874F7C96C8E4}
-		{F228BF14-B39F-42F3-AF3F-2A232E2E7E9E} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
 		{D05C133A-D98E-4DC7-95B8-3A79315895A1} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
 		{9BE402D5-7BAA-49B5-9AC3-120324493888} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
 		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {B168D901-B604-49D3-BE5E-874F7C96C8E4}
+		{B50AF19F-EEA6-4DB2-8C54-0360E4109AA5} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
+		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255} = {B50AF19F-EEA6-4DB2-8C54-0360E4109AA5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {767783F3-D6BC-48BB-A42E-9480E22D56C4}
