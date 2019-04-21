@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
 
@@ -14,6 +15,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
         public IReadOnlyCollection<Assembly> Assemblies { get; }
 
         private readonly DependencyContext _deps;
+        private readonly IReadOnlyDictionary<string, (string Name, RuntimeLibrary Library, RuntimeAssetGroup Assets)> _assemblyMap;
         private readonly ICompilationAssemblyResolver _resolver;
         private readonly IReadOnlyCollection<AssemblyLoadContext> _loaders;
 
@@ -35,8 +37,28 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
                 result = result.Merge(context);
             }
             _deps = result;
+            _assemblyMap = BuildAssemblyMap(_deps);
             _resolver = new CompositeCompilationAssemblyResolver(BuildResolvers(pluginPathsList));
             _loaders = BuildLoaders(Assemblies);
+        }
+
+        private IReadOnlyDictionary<string, (string Name, RuntimeLibrary Library, RuntimeAssetGroup Assets)> BuildAssemblyMap(DependencyContext deps)
+        {
+            var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
+            var fallbacks = _deps.RuntimeGraph
+                .FirstOrDefault(fallback => string.Equals(fallback.Runtime, runtimeIdentifier, StringComparison.OrdinalIgnoreCase))
+                ?.Fallbacks;
+            if (fallbacks == null) throw new NotImplementedException("TODO handle fallback for runtimeIdentifier?");
+
+            var runtimes = new[] { runtimeIdentifier }.Concat(fallbacks).Append(string.Empty).ToList();
+
+            return _deps.RuntimeLibraries
+                            .Where(library => library.RuntimeAssemblyGroups.Count > 0)
+                            .Select(library => FindCompatibleAssemblies(runtimes, library))
+                            .SelectMany(ToAssemblyMapEntries)
+                            // Remove duplicates
+                            .GroupBy(x => x.Name).Select(x => x.First())
+                            .ToDictionary(x => x.Name);
         }
 
         private static ICompilationAssemblyResolver[] BuildResolvers(IEnumerable<string> pluginPathsList)
@@ -71,38 +93,55 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 
         private Assembly OnResolving(AssemblyLoadContext loader, AssemblyName name)
         {
-            var library = _deps.RuntimeLibraries.SingleOrDefault(lib => lib.Name == name.Name);
-            if (library == null)
+            if (!_assemblyMap.TryGetValue(name.Name, out var mapResult))
             {
                 return null;
             }
 
-            var compilationLibrary = ToCompilationLibrary(library);
-            
+            var (_, library, assets) = mapResult;
+
+            var compilationLibrary = new CompilationLibrary(
+                library.Type,
+                library.Name,
+                library.Version,
+                library.Hash,
+                assets.AssetPaths,
+                library.Dependencies,
+                library.Serviceable,
+                library.Path,
+                library.HashPath
+            );
+
             var assemblies = new List<string>();
             if (!_resolver.TryResolveAssemblyPaths(compilationLibrary, assemblies))
             {
                 return null;
             }
 
-            var assembly = assemblies.Single();
+            var assemblyPath = assemblies.Single();
 
-            return loader.LoadFromAssemblyPath(assembly);
+            return loader.LoadFromAssemblyPath(assemblyPath);
         }
 
-        private CompilationLibrary ToCompilationLibrary(RuntimeLibrary library)
+        private IEnumerable<(string Name, RuntimeLibrary Library, RuntimeAssetGroup Assets)> ToAssemblyMapEntries((RuntimeLibrary Library, RuntimeAssetGroup Assets) input)
         {
-            return new CompilationLibrary(
-                library.Type,
-                library.Name,
-                library.Version,
-                library.Hash,
-                library.RuntimeAssemblyGroups.SelectMany(x => x.AssetPaths),
-                library.Dependencies,
-                library.Serviceable,
-                library.Path,
-                library.HashPath
-            );
+            var (library, assets) = input;
+
+            return assets.AssetPaths.Select(path => (Path.GetFileNameWithoutExtension(path), library, assets));
+        }
+
+        private (RuntimeLibrary Library, RuntimeAssetGroup Assets) FindCompatibleAssemblies(IEnumerable<string> runtimes, RuntimeLibrary library)
+        {
+            return runtimes
+                .Select(runtime => FindAssembliesForRuntime(runtime, library))
+                .FirstOrDefault(x => x.Assets?.AssetPaths != null);
+        }
+        private (RuntimeLibrary Library, RuntimeAssetGroup Assets) FindAssembliesForRuntime(string runtime, RuntimeLibrary library)
+        {
+            var assets = library.RuntimeAssemblyGroups
+                .SingleOrDefault(x => x.Runtime == runtime);
+
+            return (library, assets);
         }
 
         public void Dispose()
