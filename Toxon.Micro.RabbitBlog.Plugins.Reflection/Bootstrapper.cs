@@ -13,7 +13,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
     public static class Bootstrapper
     {
-        public static PluginLoader LoadPlugins(IReadOnlyCollection<string> pluginPaths)
+        public static PluginLoader LoadPlugins(IEnumerable<string> pluginPaths)
         {
             var rootedPluginPaths = pluginPaths
                 .Select(x => !Path.IsPathRooted(x) ? Path.Combine(Environment.CurrentDirectory, x) : x);

@@ -71,6 +71,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local", "Local", "{B50AF19F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Local.Host", "Toxon.Micro.RabbitBlog.Local.Host\Toxon.Micro.RabbitBlog.Local.Host.csproj", "{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Serverless.Tool", "Toxon.Micro.RabbitBlog.Serverless.Tool\Toxon.Micro.RabbitBlog.Serverless.Tool.csproj", "{8021B049-0539-472A-AB85-B348D82CF4B5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serverless", "Serverless", "{A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router\Toxon.Micro.RabbitBlog.Serverless.Router.csproj", "{25AFB33E-76EF-4825-9D48-36C8226AFE04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host\Toxon.Micro.RabbitBlog.Serverless.Host.csproj", "{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +157,18 @@ Global
 		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8021B049-0539-472A-AB85-B348D82CF4B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8021B049-0539-472A-AB85-B348D82CF4B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8021B049-0539-472A-AB85-B348D82CF4B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8021B049-0539-472A-AB85-B348D82CF4B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25AFB33E-76EF-4825-9D48-36C8226AFE04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25AFB33E-76EF-4825-9D48-36C8226AFE04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25AFB33E-76EF-4825-9D48-36C8226AFE04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25AFB33E-76EF-4825-9D48-36C8226AFE04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +195,10 @@ Global
 		{DBE5CF12-8680-427A-87B9-66BA4AAE2729} = {B168D901-B604-49D3-BE5E-874F7C96C8E4}
 		{B50AF19F-EEA6-4DB2-8C54-0360E4109AA5} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
 		{9FBE9D0B-C11A-4D1D-B8D9-0F573AC42255} = {B50AF19F-EEA6-4DB2-8C54-0360E4109AA5}
+		{8021B049-0539-472A-AB85-B348D82CF4B5} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
+		{A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB} = {780DCA89-CF10-45A9-A229-D34C3D8276B1}
+		{25AFB33E-76EF-4825-9D48-36C8226AFE04} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
+		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {767783F3-D6BC-48BB-A42E-9480E22D56C4}
