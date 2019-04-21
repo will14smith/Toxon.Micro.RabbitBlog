@@ -13,25 +13,29 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
     public static class Bootstrapper
     {
-        public static PluginLoader LoadPlugins(IEnumerable<string> pluginPaths)
+        public static PluginsAssemblyLoader LoadPlugins(IEnumerable<string> pluginPaths)
         {
             var rootedPluginPaths = pluginPaths
                 .Select(x => !Path.IsPathRooted(x) ? Path.Combine(Environment.CurrentDirectory, x) : x);
 
-            return new PluginLoader(rootedPluginPaths);
+            return new PluginsAssemblyLoader(rootedPluginPaths);
         }
 
         public static async Task RegisterPluginAsync(IRoutingSender sender, IRoutingRegistration registration, PluginMetadata pluginMetadata)
         {
+            if (pluginMetadata.ServiceType != ServiceType.MessageHandler)
+            {
+                return;
+            }
+
             var plugin = CreatePlugin(pluginMetadata, sender);
 
+            
             var routes = RouteDiscoverer.Discover(pluginMetadata);
             foreach (var route in routes)
             {
                 await RegisterRouteAsync(registration, plugin, route);
             }
-
-            StartPlugin(pluginMetadata, plugin);
         }
 
         private static object CreatePlugin(PluginMetadata metadata, IRoutingSender sender)
@@ -66,26 +70,6 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             {
                 var handler = RouteHandlerFactory.BuildBusHandler(plugin, route);
                 await model.RegisterHandlerAsync(pattern, new Func<Message, CancellationToken, Task>(handler));
-            }
-        }
-
-        private static void StartPlugin(PluginMetadata metadata, object plugin)
-        {
-            var methods = metadata.Type.GetMethods();
-            foreach (var method in methods)
-            {
-                var startAttribute = method.GetCustomAttribute<PluginStartAttribute>();
-                if (startAttribute == null)
-                {
-                    continue;
-                }
-
-                if (method.GetParameters().Length != 0)
-                {
-                    throw new InvalidOperationException("Cannot call start plugin method with parameters");
-                }
-
-                method.Invoke(plugin, null);
             }
         }
     }

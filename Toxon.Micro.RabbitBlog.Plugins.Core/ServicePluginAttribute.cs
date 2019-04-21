@@ -3,13 +3,15 @@
 namespace Toxon.Micro.RabbitBlog.Plugins.Core
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class MessagePluginAttribute : Attribute
+    public class ServicePluginAttribute : Attribute
     {
-        public MessagePluginAttribute(string serviceKey)
+        public ServicePluginAttribute(string serviceKey, ServiceType type = ServiceType.MessageHandler)
         {
             ServiceKey = serviceKey;
+            Type = type;
         }
 
         public string ServiceKey { get; }
+        public ServiceType Type { get; }
     }
 }

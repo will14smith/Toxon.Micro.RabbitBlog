@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
 {
-    public class PluginLoader : IDisposable
+    public class PluginsAssemblyLoader : IDisposable
     {
         public IReadOnlyCollection<Assembly> Assemblies { get; }
 
@@ -17,7 +17,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
         private readonly ICompilationAssemblyResolver _resolver;
         private readonly IReadOnlyCollection<AssemblyLoadContext> _loaders;
 
-        public PluginLoader(IEnumerable<string> pluginPaths)
+        public PluginsAssemblyLoader(IEnumerable<string> pluginPaths)
         {
             var pluginPathsList = pluginPaths.ToList();
 

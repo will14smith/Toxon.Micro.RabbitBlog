@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Plugins.Reflection\Toxon.Micro.RabbitBlog.Plugins.Reflection.csproj" />
   </ItemGroup>
 

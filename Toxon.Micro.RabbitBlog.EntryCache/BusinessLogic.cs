@@ -7,7 +7,7 @@ using Toxon.Micro.RabbitBlog.Routing.Json;
 
 namespace Toxon.Micro.RabbitBlog.EntryCache
 {
-    [MessagePlugin("entry-cache.v1")]
+    [ServicePlugin("entry-cache.v1")]
     internal class BusinessLogic
     {
         private readonly IRoutingSender _sender;

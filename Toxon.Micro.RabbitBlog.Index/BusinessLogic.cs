@@ -11,7 +11,7 @@ using Toxon.Micro.RabbitBlog.Plugins.Core;
 
 namespace Toxon.Micro.RabbitBlog.Index
 {
-    [MessagePlugin("index.v1")]
+    [ServicePlugin("index.v1")]
     internal class BusinessLogic
     {
         private readonly IndexWriter _writer;

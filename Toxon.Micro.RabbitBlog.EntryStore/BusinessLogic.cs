@@ -7,7 +7,7 @@ using Toxon.Micro.RabbitBlog.Plugins.Core;
 
 namespace Toxon.Micro.RabbitBlog.EntryStore
 {
-    [MessagePlugin("entry-store.v2")]
+    [ServicePlugin("entry-store.v2")]
     internal class BusinessLogic
     {
         private readonly List<EntryResponse> _entries = new List<EntryResponse>();

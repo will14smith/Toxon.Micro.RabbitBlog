@@ -22,8 +22,8 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
         
         private static IReadOnlyCollection<PluginMetadata> Discover(Type type)
         {
-            return type.GetCustomAttributes<MessagePluginAttribute>()
-                .Select(x => new PluginMetadata(x.ServiceKey, type))
+            return type.GetCustomAttributes<ServicePluginAttribute>()
+                .Select(x => new PluginMetadata(x.ServiceKey, x.Type, type))
                 .ToList();
         }
     }
