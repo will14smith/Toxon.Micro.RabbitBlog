@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Toxon.Micro.RabbitBlog.Core;
@@ -29,7 +28,6 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             }
 
             var plugin = CreatePlugin(pluginMetadata, sender);
-
             
             var routes = RouteDiscoverer.Discover(pluginMetadata);
             foreach (var route in routes)
