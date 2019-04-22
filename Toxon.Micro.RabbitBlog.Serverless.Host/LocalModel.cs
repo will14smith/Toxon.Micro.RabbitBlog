@@ -29,8 +29,18 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
 
         public Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
         {
-            var route = _rpcRouter.Match(message).Single();
-            return route.Data.Handler(message, cancellationToken);
+            try
+            {
+                var route = _rpcRouter.Match(message).Single();
+                return route.Data.Handler(message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // TODO log this
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return Task.FromResult(ExceptionMessage.Build(ex));
+            }
         }
 
         public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)

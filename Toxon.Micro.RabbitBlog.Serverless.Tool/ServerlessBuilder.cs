@@ -20,14 +20,12 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
 
         public string Build()
         {
-            var functions = new YamlMappingNode
-            {
-                { "router", BuildRouterFunction() }
-            };
+            var functions = new YamlMappingNode();
+            AddRouterFunction(functions);
 
             var resources = new YamlMappingNode
             {
-                { "RouterQueue", BuildQueue("router") }
+                { "RouterQueue", BuildQueue($"{_namingConventions.GetServiceName()}-router") }
             };
 
             AddServices(functions, resources);
@@ -40,19 +38,39 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         { "name", "aws" },
                         { "stage", "${opt:stage, 'dev'}" },
                         { "region", "${opt:region, 'eu-west-1'}" },
-                        { "runtime", "dotnetcore2.1" }
+                        { "runtime", "dotnetcore2.1" },
+                        {
+                            "iamRoleStatements", new YamlSequenceNode
+                            {
+                                new YamlMappingNode
+                                {
+                                    { "Effect", "Allow" },
+                                    { "Action", new YamlSequenceNode("lambda:InvokeFunction", "lambda:InvokeAsync") },
+                                    // TODO ideally tighten this up...
+                                    { "Resource", "*" }
+                                }  ,
+                                new YamlMappingNode
+                                {
+                                    { "Effect", "Allow" },
+                                    { "Action", new YamlSequenceNode("sqs:GetQueueUrl", "sqs:SendMessage") },
+                                    // TODO ideally tighten this up...
+                                    { "Resource", "*" }
+                                }
+                            }
+                        },
+                        {
+                            "tracing", new YamlMappingNode
+                            {
+                                { "apiGateway", "true" },
+                                { "lambda", "true" },
+                            }
+                        },
                     }
                 },
                 {
                     "package", new YamlMappingNode
                     {
                         { "individually", "true" },
-                    }
-                },
-                {
-                    "layers", new YamlMappingNode
-                    {
-                        { "host", BuildHostLayer() }
                     }
                 },
                 { "functions", functions },
@@ -99,62 +117,97 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 { "PLUGIN_PATHS", Path.GetFileName(service.AssemblyPath) },
             };
 
-            var events = new YamlSequenceNode();
-
             switch (plugin.ServiceType)
             {
                 case ServiceType.MessageHandler:
                     var routes = RouteDiscoverer.Discover(plugin);
                     if (routes.Any(x => !RouteHandlerFactory.IsRpc(x)))
                     {
+                        var queueName = _namingConventions.GetSqsName(plugin);
                         var queueRefName = ToTitleCase(plugin.ServiceKey.Replace('.', '-'));
 
-                        resources.Add(queueRefName, BuildQueue(queueRefName));
+                        functions.Add(functionName + "-queue", new YamlMappingNode
+                        {
+                            { "name", functionName + "-queue" },
+                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleQueueAsync" },
+                            { "environment", env },
+                            { "memorySize", "128" },
+                            { "timeout", "60" },
+                            { "events", new YamlSequenceNode(BuildSqsEvent(queueRefName)) },
+                            {
+                                "package", new YamlMappingNode
+                                {
+                                    { "artifact", $"artifacts/{service.Name}.zip" },
+                                }
+                            },
+                        });
+                        resources.Add(queueRefName, BuildQueue(queueName));
+                    }
 
-                        events.Add(BuildQueue(queueRefName));
+                    if (routes.Any(RouteHandlerFactory.IsRpc))
+                    {
+                        functions.Add(functionName, new YamlMappingNode
+                        {
+                            { "name", functionName },
+                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleDirectAsync" },
+                            { "environment", env },
+                            { "memorySize", "128" },
+                            { "timeout", "60" },
+                            {
+                                "package", new YamlMappingNode
+                                {
+                                    { "artifact", $"artifacts/{service.Name}.zip" },
+                                }
+                            },
+                        });
                     }
                     break;
                 case ServiceType.Http:
                     env.Add("HTTP_SERVICE_KEY", plugin.ServiceKey);
-                    events.Add(BuildHttpEvent());
+
+                    functions.Add(functionName, new YamlMappingNode
+                    {
+                        { "name", functionName },
+                        { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.HttpFunction::FunctionHandlerAsync" },
+                        { "environment", env },
+                        { "memorySize", "128" },
+                        { "timeout", "60" },
+                        { "events", new YamlSequenceNode(BuildHttpEvent()) },
+                        {
+                            "package", new YamlMappingNode
+                            {
+                                { "artifact", $"artifacts/{service.Name}.zip" },
+                            }
+                        },
+                    });
                     break;
 
                 default: throw new ArgumentOutOfRangeException();
             }
-
-            functions.Add(functionName, new YamlMappingNode
+        }
+        private void AddRouterFunction(YamlMappingNode functions)
+        {
+            functions.Add("router", new YamlMappingNode
             {
-                { "name", functionName },
-                { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.HostingFunction::Handle" },
-                {
-                    "layers", new YamlSequenceNode
-                    {
-                        new YamlMappingNode { { "Ref", "HostLambdaLayer" } },
-                    }
-                },
-                { "environment", env },
-                { "memorySize", "128" },
-                { "timeout", "6" },
-                { "events", events },
+                {"name", $"{_namingConventions.GetServiceName()}-router"},
+                {"handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::HandleDirectAsync"},
+                {"memorySize", "128"},
+                {"timeout", "60"},
                 {
                     "package", new YamlMappingNode
                     {
-                        { "artifact", $"artifacts/{service.Name}.zip" },
+                        {"artifact", "artifacts/router.zip"},
                     }
                 },
             });
-        }
-        private YamlNode BuildRouterFunction()
-        {
-            // TODO handle triggers, routing info (or in packager?)
-
-            return new YamlMappingNode
+            functions.Add("router-queue", new YamlMappingNode
             {
-                { "name", $"{_namingConventions.GetServiceName()}-router" },
-                { "handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::Handle" },
-                { "memorySize", "128" },
-                { "timeout", "6" },
-                { "events", new YamlSequenceNode
+                {"name", $"{_namingConventions.GetServiceName()}-router-queue"},
+                {"handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::HandleQueueAsync"},
+                {"memorySize", "128"},
+                {"timeout", "60"},
+                {
+                    "events", new YamlSequenceNode
                     {
                         BuildSqsEvent("RouterQueue")
                     }
@@ -162,10 +215,10 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 {
                     "package", new YamlMappingNode
                     {
-                        { "artifact", "artifacts/router.zip" },
+                        {"artifact", "artifacts/router.zip"},
                     }
                 },
-            };
+            });
         }
 
         private YamlNode BuildQueue(string name)
@@ -175,22 +228,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 { "Type", "AWS::SQS::Queue" },
                 { "Properties", new YamlMappingNode
                     {
-                        { "QueueName", $"{_namingConventions.GetServiceName()}-{name}" }
-                    }
-                },
-            };
-        }
-
-        private YamlNode BuildHostLayer()
-        {
-            return new YamlMappingNode
-            {
-                { "name", $"{_namingConventions.GetServiceName()}-host" },
-                { "compatibleRuntimes", new YamlSequenceNode { "dotnetcore2.1" } },
-                {
-                    "package", new YamlMappingNode
-                    {
-                        { "artifact", "artifacts/host.zip" },
+                        { "QueueName", name },
+                        { "VisibilityTimeout", "60" },
                     }
                 },
             };

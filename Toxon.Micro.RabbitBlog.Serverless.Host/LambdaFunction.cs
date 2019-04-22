@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Amazon.Lambda.SQSEvents;
+using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Newtonsoft.Json;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Host
@@ -10,6 +11,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
 
         public LambdaFunction()
         {
+            AWSSDKHandler.RegisterXRayForAllServices();
+
             var sender = LambdaConfig.CreateSender();
             _handler = LambdaConfig.CreateHandler(sender);
         }

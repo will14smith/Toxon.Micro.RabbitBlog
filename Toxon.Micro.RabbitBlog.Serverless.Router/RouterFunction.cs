@@ -9,8 +9,10 @@ using Amazon.Lambda.Model;
 using Amazon.Lambda.SQSEvents;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
 using JsonSerializer = Amazon.Lambda.Serialization.Json.JsonSerializer;
 
@@ -36,6 +38,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Router
 
         public RouterFunction(RouterConfig config)
         {
+            AWSSDKHandler.RegisterXRayForAllServices();
+
             _lambda = new AmazonLambdaClient();
             _sqs = new AmazonSQSClient();
 
@@ -50,7 +54,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Router
             var path = "routes.json";
             var file = File.ReadAllText(path);
 
-            return JsonConvert.DeserializeObject<RouterConfig>(file);
+            return JsonConvert.DeserializeObject<RouterConfig>(file, JsonMessage.Settings);
         }
 
         public async Task<MessageModel> HandleDirectAsync(MessageModel request)

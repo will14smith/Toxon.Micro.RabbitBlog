@@ -2,6 +2,7 @@
 using System.IO;
 using CommandLine;
 using Newtonsoft.Json;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Serverless.Tool.Verbs;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Tool
@@ -28,7 +29,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             var builder = new RouterConfigBuilder(BuildServiceDiscoveryOptions(options, root), new NamingConventions(options.Name));
 
             var config = builder.Build();
-            var configString = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var configString = JsonConvert.SerializeObject(config, Formatting.Indented, JsonMessage.Settings);
 
             var outputPath = Path.GetFullPath(options.Output, outputRoot);
             File.WriteAllText(outputPath, configString);

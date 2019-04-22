@@ -57,9 +57,16 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
                 Payload = JsonConvert.SerializeObject(requestModel),
             }, cancellationToken);
 
-            return new JsonSerializer()
+            var message = new JsonSerializer()
                 .Deserialize<MessageModel>(response.Payload)
                 .ToMessage();
+
+            if (ExceptionMessage.TryGetException(message, out var exception))
+            {
+                throw exception;
+            }
+
+            return message;
         }
     }
 }

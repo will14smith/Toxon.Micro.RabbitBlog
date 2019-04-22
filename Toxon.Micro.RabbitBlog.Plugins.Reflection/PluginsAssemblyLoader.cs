@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
@@ -48,7 +49,17 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             var fallbacks = _deps.RuntimeGraph
                 .FirstOrDefault(fallback => string.Equals(fallback.Runtime, runtimeIdentifier, StringComparison.OrdinalIgnoreCase))
                 ?.Fallbacks;
-            if (fallbacks == null) throw new NotImplementedException("TODO handle fallback for runtimeIdentifier?");
+            if (fallbacks == null)
+            {
+                runtimeIdentifier = GetFallbackRuntime();
+                fallbacks = _deps.RuntimeGraph
+                    .FirstOrDefault(fallback => string.Equals(fallback.Runtime, runtimeIdentifier, StringComparison.OrdinalIgnoreCase))
+                    ?.Fallbacks;
+            }
+            if (fallbacks == null)
+            {
+                fallbacks = new RuntimeFallbacks("unknown", "any", "base").Fallbacks;
+            }
 
             var runtimes = new[] { runtimeIdentifier }.Concat(fallbacks).Append(string.Empty).ToList();
 
@@ -59,6 +70,27 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
                             // Remove duplicates
                             .GroupBy(x => x.Name).Select(x => x.First())
                             .ToDictionary(x => x.Name);
+        }
+
+        private string GetFallbackRuntime()
+        {
+            string result;
+            switch (RuntimeEnvironment.OperatingSystemPlatform)
+            {
+                case Platform.Windows:
+                    result = "win10" + RuntimeEnvironment.RuntimeArchitecture;
+                    break;
+
+                case Platform.Linux:
+                    result = "linux" + RuntimeEnvironment.RuntimeArchitecture;
+                    break;
+
+                default:
+                    result = "unknown";
+                    break;
+            }
+
+            return result;
         }
 
         private static ICompilationAssemblyResolver[] BuildResolvers(IEnumerable<string> pluginPathsList)
@@ -127,7 +159,8 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
         {
             var (library, assets) = input;
 
-            return assets.AssetPaths.Select(path => (Path.GetFileNameWithoutExtension(path), library, assets));
+            return assets?.AssetPaths.Select(path => (Path.GetFileNameWithoutExtension(path), library, assets)) 
+                   ?? Enumerable.Empty<(string Name, RuntimeLibrary Library, RuntimeAssetGroup Assets)>();
         }
 
         private (RuntimeLibrary Library, RuntimeAssetGroup Assets) FindCompatibleAssemblies(IEnumerable<string> runtimes, RuntimeLibrary library)

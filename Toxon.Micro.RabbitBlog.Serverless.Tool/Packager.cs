@@ -25,9 +25,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             var artifactsFolder = Path.Combine(outputRoot, "artifacts");
             Directory.CreateDirectory(artifactsFolder);
 
-            Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host.csproj"), "host", true);
-            var routerPackage = Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj"), "router", true);
-            AddRoutesToPackage(outputRoot, routerPackage);
+            var hostFolder = RunPublish(outputRoot, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host.csproj"), "host", true);
+            PackageRouter(outputRoot, artifactsFolder);
 
             var services = ServiceDiscoverer.Discover(_serviceDiscoveryOptions);
             var pluginLoaders = Bootstrapper.LoadPlugins(services.Select(x => x.AssemblyPath));
@@ -41,18 +40,41 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     continue;
                 }
 
-                Package(outputRoot, artifactsFolder, service.ProjectPath, service.Name, false);
+                Package(outputRoot, artifactsFolder, service.ProjectPath, service.Name, hostFolder);
             }
+
+            Directory.Delete(hostFolder, true);
         }
 
-        private string Package(string outputRoot, string artifactsFolder, string projectPath, string projectName, bool isExecutable)
+        private void PackageRouter(string outputRoot, string artifactsFolder)
         {
-            var tempFolder = RunPublish(outputRoot, projectPath, projectName, isExecutable);
-            var packagePath = Path.Combine(artifactsFolder, $"{projectName}.zip");
-            File.Delete(packagePath);
+            string projectPath = Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj");
+            var tempFolder = RunPublish(outputRoot, projectPath, "router", true);
+            var packagePath = Path.Combine(artifactsFolder, $"{"router"}.zip");
 
-            ZipFile.CreateFromDirectory(tempFolder, packagePath);
-            using (var zip = ZipFile.Open(packagePath, ZipArchiveMode.Update))
+            CreateZip(tempFolder, packagePath);
+
+            Directory.Delete(tempFolder, true);
+            AddRoutesToPackage(outputRoot, packagePath);
+        }
+
+        private void Package(string outputRoot, string artifactsFolder, string projectPath, string projectName, string hostFolder)
+        {
+            var tempFolder = RunPublish(outputRoot, projectPath, projectName, false);
+            DirectoryCopy(hostFolder, tempFolder, true, true);
+
+            var packagePath = Path.Combine(artifactsFolder, $"{projectName}.zip");
+
+            CreateZip(tempFolder, packagePath);
+
+            Directory.Delete(tempFolder, true);
+        }
+
+        private static void CreateZip(string folder, string zipPath)
+        {
+            File.Delete(zipPath);
+            ZipFile.CreateFromDirectory(folder, zipPath);
+            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Update))
             {
                 foreach (var entry in zip.Entries)
                 {
@@ -63,10 +85,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     entry.ExternalAttributes |= (0b001_000_000_111_111_111) << 16;
                 }
             }
-
-            Directory.Delete(tempFolder, true);
-
-            return packagePath;
         }
 
         private string RunPublish(string outputRoot, string projectPath, string projectName, bool isExecutable)
@@ -82,9 +100,9 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             if (isExecutable)
             {
                 argsBuilder.Append(" -f netcoreapp2.1");
+                argsBuilder.Append(" /p:GenerateRuntimeConfigurationFiles=true");
             }
             argsBuilder.Append(" --self-contained false");
-            argsBuilder.Append(" /p:GenerateRuntimeConfigurationFiles=true");
             argsBuilder.Append(" /p:PreserveCompilationContext=false");
 
             var process = new Process
@@ -119,6 +137,42 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     routesFile.CopyTo(entryStream);
                     entryStream.Flush();
                 }
+            }
+        }
+
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool recursive, bool replaceExistingFiles = false)
+        {
+            var dir = new DirectoryInfo(sourceDirName);
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " + sourceDirName);
+            }
+
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            foreach (var file in dir.GetFiles())
+            {
+                var path = Path.Combine(destDirName, file.Name);
+
+                if (File.Exists(path) && !replaceExistingFiles)
+                {
+                    continue;
+                }
+
+                file.CopyTo(path, replaceExistingFiles);
+            }
+
+            if (!recursive)
+            {
+                return;
+            }
+
+            foreach (var sub in dir.GetDirectories())
+            {
+                DirectoryCopy(sub.FullName, Path.Combine(destDirName, sub.Name), true, replaceExistingFiles);
             }
         }
     }

@@ -7,7 +7,7 @@ namespace Toxon.Micro.RabbitBlog.Routing.Json
 {
     public class JsonMessage
     {
-        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             Converters =
             {
