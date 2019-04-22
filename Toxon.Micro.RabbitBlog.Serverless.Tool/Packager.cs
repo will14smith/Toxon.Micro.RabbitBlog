@@ -25,9 +25,10 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             var artifactsFolder = Path.Combine(outputRoot, "artifacts");
             Directory.CreateDirectory(artifactsFolder);
 
-            Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host.csproj"), "host");
-            Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj"), "router");
-            
+            Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host.csproj"), "host", true);
+            var routerPackage = Package(outputRoot, artifactsFolder, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj"), "router", true);
+            AddRoutesToPackage(outputRoot, routerPackage);
+
             var services = ServiceDiscoverer.Discover(_serviceDiscoveryOptions);
             var pluginLoaders = Bootstrapper.LoadPlugins(services.Select(x => x.AssemblyPath));
 
@@ -40,13 +41,13 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     continue;
                 }
 
-                Package(outputRoot, artifactsFolder, service.ProjectPath, service.Name);
+                Package(outputRoot, artifactsFolder, service.ProjectPath, service.Name, false);
             }
         }
 
-        private void Package(string outputRoot, string artifactsFolder, string projectPath, string projectName)
+        private string Package(string outputRoot, string artifactsFolder, string projectPath, string projectName, bool isExecutable)
         {
-            var tempFolder = RunPublish(outputRoot, projectPath, projectName);
+            var tempFolder = RunPublish(outputRoot, projectPath, projectName, isExecutable);
             var packagePath = Path.Combine(artifactsFolder, $"{projectName}.zip");
             File.Delete(packagePath);
 
@@ -62,11 +63,13 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     entry.ExternalAttributes |= (0b001_000_000_111_111_111) << 16;
                 }
             }
-            
+
             Directory.Delete(tempFolder, true);
+
+            return packagePath;
         }
 
-        private string RunPublish(string outputRoot, string projectPath, string projectName)
+        private string RunPublish(string outputRoot, string projectPath, string projectName, bool isExecutable)
         {
             var tempFolder = Path.Combine(outputRoot, "temp", projectName + "-" + DateTime.UtcNow.ToString("yyyyMMMMddHHmmss"));
             Directory.CreateDirectory(tempFolder);
@@ -76,6 +79,10 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             argsBuilder.Append($" {projectPath}");
             argsBuilder.Append($" -c {_options.Configuration}");
             argsBuilder.Append($" -o {tempFolder}");
+            if (isExecutable)
+            {
+                argsBuilder.Append(" -f netcoreapp2.1");
+            }
             argsBuilder.Append(" --self-contained false");
             argsBuilder.Append(" /p:GenerateRuntimeConfigurationFiles=true");
             argsBuilder.Append(" /p:PreserveCompilationContext=false");
@@ -97,6 +104,22 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             }
 
             return tempFolder;
+        }
+
+        private void AddRoutesToPackage(string outputRoot, string routerPackagePath)
+        {
+            var routesFilePath = Path.Combine(outputRoot, "routes.json");
+
+            using (var zip = ZipFile.Open(routerPackagePath, ZipArchiveMode.Update))
+            using (var routesFile = File.OpenRead(routesFilePath))
+            {
+                var entry = zip.CreateEntry("routes.json");
+                using (var entryStream = entry.Open())
+                {
+                    routesFile.CopyTo(entryStream);
+                    entryStream.Flush();
+                }
+            }
         }
     }
 }

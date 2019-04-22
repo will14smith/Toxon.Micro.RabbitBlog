@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using Toxon.Micro.RabbitBlog.Plugins.Core;
 using Toxon.Micro.RabbitBlog.Plugins.Reflection;
 using YamlDotNet.RepresentationModel;
 
@@ -25,7 +25,12 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 { "router", BuildRouterFunction() }
             };
 
-            AddServices(functions);
+            var resources = new YamlMappingNode
+            {
+                { "RouterQueue", BuildQueue("router") }
+            };
+
+            AddServices(functions, resources);
 
             var root = new YamlMappingNode
             {
@@ -34,7 +39,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     {
                         { "name", "aws" },
                         { "stage", "${opt:stage, 'dev'}" },
-                        { "region", "TODO" },
+                        { "region", "${opt:region, 'eu-west-1'}" },
                         { "runtime", "dotnetcore2.1" }
                     }
                 },
@@ -43,7 +48,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     {
                         { "individually", "true" },
                     }
-
                 },
                 {
                     "layers", new YamlMappingNode
@@ -51,7 +55,12 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         { "host", BuildHostLayer() }
                     }
                 },
-                { "functions", functions }
+                { "functions", functions },
+                { "resources", new YamlMappingNode
+                    {
+                        { "Resources", resources }
+                    }
+                }
             };
 
             var doc = new YamlDocument(root);
@@ -62,7 +71,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             return output.ToString();
         }
 
-        private void AddServices(YamlMappingNode functions)
+        private void AddServices(YamlMappingNode functions, YamlMappingNode resources)
         {
             var services = ServiceDiscoverer.Discover(_serviceDiscoveryOptions);
             var pluginLoaders = Bootstrapper.LoadPlugins(services.Select(x => x.AssemblyPath));
@@ -74,15 +83,44 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
 
                 foreach (var plugin in plugins)
                 {
-                    AddService(functions, service, plugin);
+                    AddService(functions, resources, service, plugin);
                 }
             }
         }
 
-        private void AddService(YamlMappingNode functions, ServiceProject service, PluginMetadata plugin)
+        private void AddService(YamlMappingNode functions, YamlMappingNode resources, ServiceProject service, PluginMetadata plugin)
         {
-            // TODO handle triggers, environment variables
             var functionName = _namingConventions.GetLambdaName(plugin);
+
+            var env = new YamlMappingNode
+            {
+                { "ROUTER_QUEUE_NAME", new YamlMappingNode { { "Fn::GetAtt", new YamlSequenceNode("RouterQueue", "QueueName") } } },
+                { "ROUTER_FUNCTION_NAME", new YamlMappingNode { { "Ref", "RouterLambdaFunction" } } },
+                { "PLUGIN_PATHS", Path.GetFileName(service.AssemblyPath) },
+            };
+
+            var events = new YamlSequenceNode();
+
+            switch (plugin.ServiceType)
+            {
+                case ServiceType.MessageHandler:
+                    var routes = RouteDiscoverer.Discover(plugin);
+                    if (routes.Any(x => !RouteHandlerFactory.IsRpc(x)))
+                    {
+                        var queueRefName = ToTitleCase(plugin.ServiceKey.Replace('.', '-'));
+
+                        resources.Add(queueRefName, BuildQueue(queueRefName));
+
+                        events.Add(BuildQueue(queueRefName));
+                    }
+                    break;
+                case ServiceType.Http:
+                    env.Add("HTTP_SERVICE_KEY", plugin.ServiceKey);
+                    events.Add(BuildHttpEvent());
+                    break;
+
+                default: throw new ArgumentOutOfRangeException();
+            }
 
             functions.Add(functionName, new YamlMappingNode
             {
@@ -94,8 +132,10 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         new YamlMappingNode { { "Ref", "HostLambdaLayer" } },
                     }
                 },
+                { "environment", env },
                 { "memorySize", "128" },
                 { "timeout", "6" },
+                { "events", events },
                 {
                     "package", new YamlMappingNode
                     {
@@ -104,7 +144,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 },
             });
         }
-
         private YamlNode BuildRouterFunction()
         {
             // TODO handle triggers, routing info (or in packager?)
@@ -115,10 +154,28 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 { "handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::Handle" },
                 { "memorySize", "128" },
                 { "timeout", "6" },
+                { "events", new YamlSequenceNode
+                    {
+                        BuildSqsEvent("RouterQueue")
+                    }
+                },
                 {
                     "package", new YamlMappingNode
                     {
                         { "artifact", "artifacts/router.zip" },
+                    }
+                },
+            };
+        }
+
+        private YamlNode BuildQueue(string name)
+        {
+            return new YamlMappingNode
+            {
+                { "Type", "AWS::SQS::Queue" },
+                { "Properties", new YamlMappingNode
+                    {
+                        { "QueueName", $"{_namingConventions.GetServiceName()}-{name}" }
                     }
                 },
             };
@@ -138,5 +195,38 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                 },
             };
         }
+
+        private YamlNode BuildSqsEvent(string queueRefName)
+        {
+            return new YamlMappingNode
+            {
+                { "sqs", new YamlMappingNode
+                    {
+                        { "arn", new YamlMappingNode { { "Fn::GetAtt", new YamlSequenceNode(queueRefName, "Arn") } } },
+                    }
+                },
+            };
+        }
+        private YamlNode BuildHttpEvent()
+        {
+            return new YamlMappingNode
+            {
+                { "http", new YamlMappingNode
+                    {
+                        { "path", "/{proxy+}" },
+                        { "method", "ANY" },
+                    }
+                },
+            };
+        }
+
+        private static string ToTitleCase(string str)
+        {
+            return string.Join("", str
+                .Split('-')
+                .Select(x => char.ToUpper(x[0]) + x.Substring(1).ToLower())
+            );
+        }
+
     }
 }
