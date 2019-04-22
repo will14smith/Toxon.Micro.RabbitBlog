@@ -28,11 +28,11 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
             _sqs = new AmazonSQSClient();
 
             _routerQueueUrl = new Lazy<Task<string>>(() => Task.Run(async () =>
-                {
-                    var response = await _sqs.GetQueueUrlAsync(routerQueueName);
+            {
+                var response = await _sqs.GetQueueUrlAsync(routerQueueName);
 
-                    return response.QueueUrl;
-                }));
+                return response.QueueUrl;
+            }));
         }
 
         public async Task SendAsync(Message message, CancellationToken cancellationToken = default)

@@ -1,6 +1,6 @@
 ﻿namespace Toxon.Micro.RabbitBlog.Serverless.Router
 {
-    public enum RouteType
+    public enum RouteTargetType
     {
         Sqs,
         Lambda

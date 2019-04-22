@@ -4,15 +4,17 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Router
 {
     public class RouterEntry
     {
-        public RouterEntry(RouteType type, string arn, IRequestMatcher route)
+        public RouterEntry(string serviceKey, IRequestMatcher route, RouteTargetType targetType, string target)
         {
-            Arn = arn;
+            ServiceKey = serviceKey;
             Route = route;
-            Type = type;
+            TargetType = targetType;
+            Target = target;
         }
 
-        public RouteType Type { get; }
-        public string Arn { get; }
+        public string ServiceKey { get; }
         public IRequestMatcher Route { get; }
+        public RouteTargetType TargetType { get; }
+        public string Target { get; }
     }
 }

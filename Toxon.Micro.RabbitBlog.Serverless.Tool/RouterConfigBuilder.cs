@@ -36,12 +36,21 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
 
         private RouterEntry ToRouterEntry(PluginMetadata plugin, RouteMetadata metadata)
         {
+            RouteTargetType targetType;
+            string target;
+
             if (RouteHandlerFactory.IsRpc(metadata))
             {
-                return new RouterEntry(RouteType.Lambda, _namingConventions.GetLambdaArn(plugin), metadata.Route);
+                targetType = RouteTargetType.Lambda;
+                target = _namingConventions.GetLambdaName(plugin);
+            }
+            else
+            {
+                targetType = RouteTargetType.Sqs;
+                target = _namingConventions.GetSqsName(plugin);
             }
 
-            return new RouterEntry(RouteType.Sqs, _namingConventions.GetSqsArn(plugin), metadata.Route);
+            return new RouterEntry(plugin.ServiceKey, metadata.Route, targetType, target);
         }
     }
 }
