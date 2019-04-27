@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Toxon.Micro.RabbitBlog.Plugins.Core;
 using Toxon.Micro.RabbitBlog.Plugins.Reflection;
 using Toxon.Micro.RabbitBlog.Routing;
@@ -19,11 +20,18 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
         static async Task Main(string[] args)
         {
             var pluginPaths = DiscoverPluginAssemblies();
+            var log = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+            {
+                log.Error((Exception)eventArgs.ExceptionObject, "Unhandled error!");
+            };
 
             var pluginLoaders = Bootstrapper.LoadPlugins(pluginPaths);
             var plugins = PluginDiscoverer.Discover(pluginLoaders.Assemblies);
 
-            var model = new LocalModel();
+            var model = new LocalModel(log);
             foreach (var plugin in plugins)
             {
                 switch (plugin.ServiceType)

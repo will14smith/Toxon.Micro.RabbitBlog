@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 using Toxon.Micro.RabbitBlog.Core;
 using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
 using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
 
@@ -11,25 +15,56 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
 {
     internal class LocalModel : IRoutingSender, IRoutingRegistration
     {
-        private readonly Router<BusRoutingData> _busRouter = CreateRouter<BusRoutingData>();
-        private readonly Router<RpcRoutingData> _rpcRouter = CreateRouter<RpcRoutingData>();
+        private readonly ILogger _logger;
 
-        private static Router<T> CreateRouter<T>() =>
-            new Router<T>(new CompositeRouteSelectionStrategy<T>(
-                new MatchingRoutesSelectionStrategy<T>(),
-                new TopScoringRoutesSelectionStrategy<T>(new RouteScoreComparer()),
-                new RandomRouteSelectionStrategy<T>()
-            ));
+        private readonly Router<BusRoutingData> _busRouter = new Router<BusRoutingData>(new CompositeRouteSelectionStrategy<BusRoutingData>(
+            new MatchingRoutesSelectionStrategy<BusRoutingData>(),
+            new TopScoringRoutesSelectionStrategy<BusRoutingData>(new RouteScoreComparer())
+        ));
+        private readonly Router<RpcRoutingData> _rpcRouter = new Router<RpcRoutingData>(new CompositeRouteSelectionStrategy<RpcRoutingData>(
+            new MatchingRoutesSelectionStrategy<RpcRoutingData>(),
+            new TopScoringRoutesSelectionStrategy<RpcRoutingData>(new RouteScoreComparer()),
+            new RandomRouteSelectionStrategy<RpcRoutingData>()
+        ));
 
-        public Task SendAsync(Message message, CancellationToken cancellationToken = default)
+        public LocalModel(ILogger logger)
         {
-            var route = _busRouter.Match(message).Single();
-            return route.Data.Handler(message, cancellationToken);
+            _logger = logger;
+        }
+
+        public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
+        {
+            var routes = _busRouter.Match(message);
+
+            if (!routes.Any())
+            {
+                var fields = JsonMessage.Read<Dictionary<string, object>>(message);
+
+                _logger.Information("Failed to match any routes for bus message: {fields}", fields);
+            }
+
+            foreach (var route in routes)
+            {
+                await route.Data.Handler(message, cancellationToken);
+            }
         }
 
         public Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
         {
-            var route = _rpcRouter.Match(message).Single();
+            var routes = _rpcRouter.Match(message);
+
+            if (!routes.Any())
+            {
+                var fields = JsonMessage.Read<Dictionary<string, object>>(message);
+
+                _logger.Error("Failed to match any routes for RPC message: {fields}", fields);
+
+                var fieldsString = string.Join(", ", fields.Select(x => $"{x.Key}:{x.Value}"));
+                throw new Exception($"Failed to match any routes for RPC message: {fieldsString}");
+            }
+
+            var route = routes.Single();
+
             return route.Data.Handler(message, cancellationToken);
         }
 
