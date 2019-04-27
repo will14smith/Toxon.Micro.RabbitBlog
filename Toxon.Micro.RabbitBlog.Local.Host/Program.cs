@@ -72,6 +72,7 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
             return files
                 .Where(x => !x.EndsWith(".Tests.csproj") && !x.EndsWith(".Test.csproj") && !x.Contains("node_modules"))
                 .Select(projectPath => FindAssembly(rootDir, projectPath))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToList();
         }
 
@@ -83,7 +84,7 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
 
             return files
                 .OrderByDescending(File.GetLastWriteTimeUtc)
-                .First();
+                .FirstOrDefault();
         }
     }
 }
