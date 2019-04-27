@@ -15,11 +15,10 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
 {
     class Program
     {
-        private static int Port = 8499;
+        private static int _port = 8499;
 
         static async Task Main(string[] args)
         {
-            var pluginPaths = DiscoverPluginAssemblies();
             var log = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
@@ -27,6 +26,8 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
             {
                 log.Error((Exception)eventArgs.ExceptionObject, "Unhandled error!");
             };
+
+            var pluginPaths = Discover(Environment.CurrentDirectory);
 
             var pluginLoaders = Bootstrapper.LoadPlugins(pluginPaths);
             var plugins = PluginDiscoverer.Discover(pluginLoaders.Assemblies);
@@ -46,13 +47,14 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
             Console.WriteLine($"Running {string.Join(", ", plugins.Select(x => x.ServiceKey))}... press enter to exit!");
             Console.ReadLine();
         }
 
         private static IWebHost StartWebServer(PluginMetadata plugin, IRoutingSender sender)
         {
-            var port = Interlocked.Increment(ref Port);
+            var port = Interlocked.Increment(ref _port);
 
             Console.WriteLine($"Running {plugin.ServiceKey} HTTP server on {port}");
 
@@ -63,36 +65,25 @@ namespace Toxon.Micro.RabbitBlog.Local.Host
                 .Start();
         }
 
-        private static IReadOnlyCollection<string> DiscoverPluginAssemblies()
+        public static IReadOnlyCollection<string> Discover(string rootDir)
         {
-            // navigate to solution root
-            var baseDir = Path.GetFullPath("../../../../", Environment.CurrentDirectory);
-            var pattern = "Toxon.Micro.RabbitBlog.*.dll";
-
-            var files = Directory.GetFiles(baseDir, pattern, SearchOption.AllDirectories);
+            var files = Directory.GetFiles(rootDir, "*.csproj", SearchOption.AllDirectories);
 
             return files
-                .Where(x => x.Contains($"bin{Path.DirectorySeparatorChar}Debug"))
-                .Where(x => !x.EndsWith(".Tests.dll") && !x.EndsWith(".Test.dll"))
-                .OrderByDescending(File.GetLastWriteTimeUtc)
-                .Distinct(new FileNameEqualityComparer())
+                .Where(x => !x.EndsWith(".Tests.csproj") && !x.EndsWith(".Test.csproj") && !x.Contains("node_modules"))
+                .Select(projectPath => FindAssembly(rootDir, projectPath))
                 .ToList();
         }
-    }
 
-    internal class FileNameEqualityComparer : IEqualityComparer<string>
-    {
-        public bool Equals(string x, string y)
+        private static string FindAssembly(string rootDir, string projectPath)
         {
-            var xFileName = Path.GetFileName(x)?.ToLower();
-            var yFileName = Path.GetFileName(y)?.ToLower();
+            var assemblyName = Path.GetFileNameWithoutExtension(projectPath) + ".dll";
 
-            return string.Equals(xFileName, yFileName, StringComparison.InvariantCultureIgnoreCase);
-        }
+            var files = Directory.GetFiles(rootDir, assemblyName, SearchOption.AllDirectories);
 
-        public int GetHashCode(string obj)
-        {
-            return Path.GetFileName(obj)?.ToLower().GetHashCode() ?? 0;
+            return files
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .First();
         }
     }
 }
