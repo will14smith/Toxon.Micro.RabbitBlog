@@ -131,7 +131,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                             { "name", functionName + "-queue" },
                             { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleQueueAsync" },
                             { "environment", env },
-                            { "memorySize", "128" },
+                            { "memorySize", "512" },
                             { "timeout", "60" },
                             { "events", new YamlSequenceNode(BuildSqsEvent(queueRefName)) },
                             {
@@ -151,7 +151,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                             { "name", functionName },
                             { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleDirectAsync" },
                             { "environment", env },
-                            { "memorySize", "128" },
+                            { "memorySize", "512" },
                             { "timeout", "60" },
                             {
                                 "package", new YamlMappingNode
@@ -170,7 +170,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         { "name", functionName },
                         { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.HttpFunction::FunctionHandlerAsync" },
                         { "environment", env },
-                        { "memorySize", "128" },
+                        { "memorySize", "512" },
                         { "timeout", "60" },
                         { "events", new YamlSequenceNode(BuildHttpEvent()) },
                         {
@@ -191,7 +191,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             {
                 {"name", $"{_namingConventions.GetServiceName()}-router"},
                 {"handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::HandleDirectAsync"},
-                {"memorySize", "128"},
+                {"memorySize", "512"},
                 {"timeout", "60"},
                 {
                     "package", new YamlMappingNode
@@ -204,7 +204,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             {
                 {"name", $"{_namingConventions.GetServiceName()}-router-queue"},
                 {"handler", "Toxon.Micro.RabbitBlog.Serverless.Router::Toxon.Micro.RabbitBlog.Serverless.Router.RouterFunction::HandleQueueAsync"},
-                {"memorySize", "128"},
+                {"memorySize", "512"},
                 {"timeout", "60"},
                 {
                     "events", new YamlSequenceNode
