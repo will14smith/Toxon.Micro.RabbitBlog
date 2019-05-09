@@ -14,7 +14,6 @@ using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
-using JsonSerializer = Amazon.Lambda.Serialization.Json.JsonSerializer;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Router
 {
@@ -57,7 +56,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Router
             return JsonConvert.DeserializeObject<RouterConfig>(file, JsonMessage.Settings);
         }
 
-        public async Task<MessageModel> HandleDirectAsync(MessageModel request)
+        public async Task<object> HandleDirectAsync(MessageModel request)
         {
             var route = _router.Match(request.ToMessage()).First();
             if (route.Data.TargetType != RouteTargetType.Lambda)
@@ -65,15 +64,12 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Router
                 throw new InvalidOperationException("Cannot invoke queue with response");
             }
 
-            var response = await _lambda.InvokeAsync(new InvokeRequest
+            return new
             {
-                FunctionName = route.Data.Target,
-                InvocationType = InvocationType.RequestResponse,
-                Payload = JsonConvert.SerializeObject(request)
-            });
-
-            return new JsonSerializer()
-                .Deserialize<MessageModel>(response.Payload);
+                route.Data.ServiceKey,
+                route.Data.Target,
+                route.Data.TargetType,
+            };
         }
 
         public async Task HandleQueueAsync(SQSEvent message)

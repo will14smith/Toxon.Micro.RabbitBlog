@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Lambda;
 using Amazon.Lambda.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using Amazon.XRay;
+using Amazon.XRay.Recorder.Core;
+using Amazon.XRay.Recorder.Core.Internal.Context;
 using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Routing;
 using JsonSerializer = Amazon.Lambda.Serialization.Json.JsonSerializer;
@@ -19,6 +23,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
 
         private readonly IAmazonLambda _lambda;
         private readonly IAmazonSQS _sqs;
+
+        private readonly JsonSerializer _jsonSerializer = new JsonSerializer();
 
         public LambdaSender(string routerQueueName, string routerFunctionName)
         {
@@ -39,6 +45,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         {
             var model = new MessageModel(message);
 
+            var records = AWSXRayRecorder.Instance;
+
             await _sqs.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = await _routerQueueUrl.Value,
@@ -50,6 +58,22 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         {
             var requestModel = new MessageModel(request);
 
+            var route = await GetRouteAsync(requestModel, cancellationToken);
+
+            var response = await _lambda.InvokeAsync(new InvokeRequest
+            {
+                FunctionName = route.Target,
+                InvocationType = InvocationType.RequestResponse,
+                Payload = JsonConvert.SerializeObject(request)
+            }, cancellationToken);
+
+            return _jsonSerializer
+                .Deserialize<MessageModel>(response.Payload)
+                .ToMessage();
+        }
+
+        private async Task<RouteResponse> GetRouteAsync(MessageModel requestModel, CancellationToken cancellationToken)
+        {
             var response = await _lambda.InvokeAsync(new InvokeRequest
             {
                 FunctionName = _routerFunctionName,
@@ -57,16 +81,13 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
                 Payload = JsonConvert.SerializeObject(requestModel),
             }, cancellationToken);
 
-            var message = new JsonSerializer()
-                .Deserialize<MessageModel>(response.Payload)
-                .ToMessage();
-
-            if (ExceptionMessage.TryGetException(message, out var exception))
-            {
-                throw exception;
-            }
-
-            return message;
+            return _jsonSerializer
+                .Deserialize<RouteResponse>(response.Payload);
         }
+    }
+
+    internal class RouteResponse
+    {
+        public string Target { get; set; }
     }
 }
