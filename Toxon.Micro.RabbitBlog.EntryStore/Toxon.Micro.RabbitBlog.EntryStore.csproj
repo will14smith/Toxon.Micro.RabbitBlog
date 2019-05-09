@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.101.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Plugins.Core\Toxon.Micro.RabbitBlog.Plugins.Core.csproj" />
   </ItemGroup>
 

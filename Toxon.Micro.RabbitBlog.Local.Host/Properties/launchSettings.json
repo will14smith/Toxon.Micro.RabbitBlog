@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Toxon.Micro.RabbitBlog.Local.Host": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\will\\Source\\Repos\\Toxon.Micro.RabbitBlog"
+    }
+  }
+}

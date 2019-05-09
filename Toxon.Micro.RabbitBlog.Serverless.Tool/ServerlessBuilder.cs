@@ -48,12 +48,19 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                                     { "Action", new YamlSequenceNode("lambda:InvokeFunction", "lambda:InvokeAsync") },
                                     // TODO ideally tighten this up...
                                     { "Resource", "*" }
-                                }  ,
+                                },
                                 new YamlMappingNode
                                 {
                                     { "Effect", "Allow" },
                                     { "Action", new YamlSequenceNode("sqs:GetQueueUrl", "sqs:SendMessage") },
                                     // TODO ideally tighten this up...
+                                    { "Resource", "*" }
+                                },
+                                // TODO allow dynamic injection / file inclusion
+                                new YamlMappingNode
+                                {
+                                    { "Effect", "Allow" },
+                                    { "Action", new YamlSequenceNode("dynamodb:*") },
                                     { "Resource", "*" }
                                 }
                             }

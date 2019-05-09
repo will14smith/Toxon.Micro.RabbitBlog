@@ -33,7 +33,7 @@ namespace Toxon.Micro.RabbitBlog.Index
             var document = new Lucene.Net.Documents.Document
             {
                 new StringField("kind", message.Kind, Field.Store.YES),
-                new Int32Field("id", message.Id, Field.Store.YES)
+                new StringField("id", message.Id, Field.Store.YES)
             };
 
             foreach (var field in message.Fields)
@@ -86,7 +86,7 @@ namespace Toxon.Micro.RabbitBlog.Index
                     Document = new Inbound.Document
                     {
                         Kind = foundDoc.Get("kind"),
-                        Id = foundDoc.GetField("id").GetInt32ValueOrDefault(),
+                        Id = foundDoc.Get("id"),
                         Fields = fields,
                     }
                 });

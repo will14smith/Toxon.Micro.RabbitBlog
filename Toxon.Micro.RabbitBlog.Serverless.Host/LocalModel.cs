@@ -27,19 +27,23 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
             return route.Data.Handler(message, cancellationToken);
         }
 
-        public Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
+        public async Task<Message> CallAsync(Message message, CancellationToken cancellationToken = default)
         {
             try
             {
+                Console.WriteLine($"{Timing.Now} Routing Call: Start");
                 var route = _rpcRouter.Match(message).Single();
-                return route.Data.Handler(message, cancellationToken);
+                Console.WriteLine($"{Timing.Now} Routing Call: Found route");
+                var result = await route.Data.Handler(message, cancellationToken);
+                Console.WriteLine($"{Timing.Now} Routing Call: Done");
+                return result;
             }
             catch (Exception ex)
             {
                 // TODO log this
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                return Task.FromResult(ExceptionMessage.Build(ex));
+                return ExceptionMessage.Build(ex);
             }
         }
 
