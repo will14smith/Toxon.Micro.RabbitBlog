@@ -16,7 +16,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
             AWSSDKHandler.RegisterXRayForAllServices();
 
             var sender = LambdaConfig.CreateSender();
-            _handler = LambdaConfig.CreateHandler(sender);
+            _handler = LambdaPluginConfig.CreateHandler(sender);
         }
 
         public async Task<MessageModel> HandleDirectAsync(MessageModel requestModel)

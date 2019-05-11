@@ -8,13 +8,8 @@ using Toxon.Micro.RabbitBlog.Serverless.Core;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Host
 {
-    internal static class LambdaConfig
+    internal static class LambdaPluginConfig
     {
-        public static IRoutingSender CreateSender()
-        {
-            return new LambdaSender(GetRouterQueueName(), GetRouterFunctionName());
-        }
-        
         public static LocalModel CreateHandler(IRoutingSender sender)
         {
             var plugins = DiscoverPlugins();
@@ -36,14 +31,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
             return PluginDiscoverer.Discover(pluginLoaders.Assemblies);
         }
 
-        public static string GetRouterQueueName()
-        {
-            return Environment.GetEnvironmentVariable("ROUTER_QUEUE_NAME");
-        }
-        public static string GetRouterFunctionName()
-        {
-            return Environment.GetEnvironmentVariable("ROUTER_FUNCTION_NAME");
-        }
         public static string GetHttpServiceKey()
         {
             return Environment.GetEnvironmentVariable("HTTP_SERVICE_KEY");

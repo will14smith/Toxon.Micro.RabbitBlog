@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Toxon.Micro.RabbitBlog.Plugins.Core;
+using Toxon.Micro.RabbitBlog.Serverless.Core;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Host
 {
@@ -14,8 +15,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         {
             AWSSDKHandler.RegisterXRayForAllServices();
 
-            var plugins = LambdaConfig.DiscoverPlugins();
-            var httpServiceKey = LambdaConfig.GetHttpServiceKey();
+            var plugins = LambdaPluginConfig.DiscoverPlugins();
+            var httpServiceKey = LambdaPluginConfig.GetHttpServiceKey();
 
             var sender = LambdaConfig.CreateSender();
             var plugin = plugins.Single(x => x.ServiceKey == httpServiceKey && x.ServiceType == ServiceType.Http);
