@@ -4,6 +4,7 @@ using System.Linq;
 using Toxon.Micro.RabbitBlog.Plugins.Core;
 using Toxon.Micro.RabbitBlog.Plugins.Reflection;
 using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Serverless.Core;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.Host
 {
@@ -17,15 +18,11 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         public static LocalModel CreateHandler(IRoutingSender sender)
         {
             var plugins = DiscoverPlugins();
-            Console.WriteLine($"{Timing.Now} Discovered {plugins.Count} plugins");
-
             var handler = new LocalModel();
 
             foreach (var plugin in plugins.Where(x => x.ServiceType == ServiceType.MessageHandler))
             {
-                Console.WriteLine($"{Timing.Now} Registering {plugin.ServiceKey}");
                 Bootstrapper.RegisterPluginAsync(sender, handler, plugin).Wait();
-                Console.WriteLine($"{Timing.Now} Registered {plugin.ServiceKey}");
             }
 
             return handler;
@@ -33,10 +30,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
 
         public static IReadOnlyCollection<PluginMetadata> DiscoverPlugins()
         {
-            Console.WriteLine($"{Timing.Now} Discovering plugins");
             var pluginPaths = GetPluginPaths();
             var pluginLoaders = Bootstrapper.LoadPlugins(pluginPaths);
-            Console.WriteLine($"{Timing.Now} Loaded plugins");
 
             return PluginDiscoverer.Discover(pluginLoaders.Assemblies);
         }

@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Lambda;
 using Amazon.Lambda.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Amazon.XRay;
-using Amazon.XRay.Recorder.Core;
-using Amazon.XRay.Recorder.Core.Internal.Context;
 using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Routing;
-using JsonSerializer = Amazon.Lambda.Serialization.Json.JsonSerializer;
 using Message = Toxon.Micro.RabbitBlog.Core.Message;
 
-namespace Toxon.Micro.RabbitBlog.Serverless.Host
+namespace Toxon.Micro.RabbitBlog.Serverless.Core
 {
     public class LambdaSender : IRoutingSender
     {
@@ -45,8 +41,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         {
             var model = new MessageModel(message);
 
-            var records = AWSXRayRecorder.Instance;
-
             await _sqs.SendMessageAsync(new SendMessageRequest
             {
                 QueueUrl = await _routerQueueUrl.Value,
@@ -67,9 +61,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
                 Payload = JsonConvert.SerializeObject(request)
             }, cancellationToken);
 
-            return _jsonSerializer
-                .Deserialize<MessageModel>(response.Payload)
-                .ToMessage();
+            var responseModel = DeserializeStream<MessageModel>(response.Payload);
+            return responseModel.ToMessage();
         }
 
         private async Task<RouteResponse> GetRouteAsync(MessageModel requestModel, CancellationToken cancellationToken)
@@ -81,8 +74,17 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
                 Payload = JsonConvert.SerializeObject(requestModel),
             }, cancellationToken);
 
-            return _jsonSerializer
-                .Deserialize<RouteResponse>(response.Payload);
+            return DeserializeStream<RouteResponse>(response.Payload);
+        }
+
+
+        private T DeserializeStream<T>(Stream stream)
+        {
+            using (var textReader = new StreamReader(stream))
+            using (var reader = new JsonTextReader(textReader))
+            {
+                return _jsonSerializer.Deserialize<T>(reader);
+            }
         }
     }
 

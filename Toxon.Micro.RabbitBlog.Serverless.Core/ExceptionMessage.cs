@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Core;
 
-namespace Toxon.Micro.RabbitBlog.Serverless.Host
+namespace Toxon.Micro.RabbitBlog.Serverless.Core
 {
-    internal class ExceptionMessage
+    public class ExceptionMessage
     {
-        private const string ExceptionHeader = "__execption__";
+        private const string ExceptionHeader = "__exception__";
 
         public static bool TryGetException(Message message, out Exception exception)
         {

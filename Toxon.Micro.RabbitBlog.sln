@@ -88,6 +88,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxon.Micro.RabbitBlog.Serv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{E394FA2F-EDDF-4C65-882A-1DBAC3624EFC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toxon.Micro.RabbitBlog.Serverless.Core", "Toxon.Micro.RabbitBlog.Serverless.Core\Toxon.Micro.RabbitBlog.Serverless.Core.csproj", "{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -178,6 +180,10 @@ Global
 		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +214,7 @@ Global
 		{A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB} = {E394FA2F-EDDF-4C65-882A-1DBAC3624EFC}
 		{25AFB33E-76EF-4825-9D48-36C8226AFE04} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
 		{DECB1EE8-CE10-4992-AF6A-37ADE31E7C9C} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
+		{6E5EA75A-C3E0-45FC-9013-C1975C6F3D98} = {A5B80104-F79B-487F-A2EF-3FAEF3DDE5BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {767783F3-D6BC-48BB-A42E-9480E22D56C4}

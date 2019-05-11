@@ -7,9 +7,9 @@ using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Patterns;
 using Toxon.Micro.RabbitBlog.Routing.RouteSelection;
 
-namespace Toxon.Micro.RabbitBlog.Serverless.Host
+namespace Toxon.Micro.RabbitBlog.Serverless.Core
 {
-    internal class LocalModel : IRoutingSender, IRoutingRegistration
+    public class LocalModel : IRoutingSender, IRoutingRegistration
     {
         private readonly Router<BusRoutingData> _busRouter = CreateRouter<BusRoutingData>();
         private readonly Router<RpcRoutingData> _rpcRouter = CreateRouter<RpcRoutingData>();

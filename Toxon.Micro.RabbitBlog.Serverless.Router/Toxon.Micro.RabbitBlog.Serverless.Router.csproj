@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Routing\Toxon.Micro.RabbitBlog.Routing.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Serverless.Core\Toxon.Micro.RabbitBlog.Serverless.Core.csproj" />
   </ItemGroup>
 
 </Project>
