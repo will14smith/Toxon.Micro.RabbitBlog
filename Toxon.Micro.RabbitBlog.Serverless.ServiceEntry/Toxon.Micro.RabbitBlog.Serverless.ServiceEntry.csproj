@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+
+    <AWSProjectType>Lambda</AWSProjectType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.1.0" />
+    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.5.0" />
+    <PackageReference Include="Amazon.Lambda.SQSEvents" Version="1.1.0" />
+    <PackageReference Include="AWSSDK.Lambda" Version="3.3.100.7" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.3.100.7" />
+    <PackageReference Include="AWSXRayRecorder.Core" Version="2.5.1" />
+    <PackageReference Include="AWSXRayRecorder.Handlers.AwsSdk" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Serverless.Core\Toxon.Micro.RabbitBlog.Serverless.Core.csproj" />
+  </ItemGroup>
+
+</Project>
