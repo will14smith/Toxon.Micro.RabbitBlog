@@ -20,12 +20,9 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
 
         public async Task<MessageModel> HandleDirectAsync(MessageModel requestModel)
         {
-            Console.WriteLine($"{Timing.Now} HandleDirectAsync");
             var request = requestModel.ToMessage();
-
             var response = await _handler.CallAsync(request);
 
-            Console.WriteLine($"{Timing.Now} HandleDirectAsync done");
             return new MessageModel(response);
         }
 

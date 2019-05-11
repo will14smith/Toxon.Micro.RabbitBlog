@@ -31,12 +31,8 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Host
         {
             try
             {
-                Console.WriteLine($"{Timing.Now} Routing Call: Start");
                 var route = _rpcRouter.Match(message).Single();
-                Console.WriteLine($"{Timing.Now} Routing Call: Found route");
-                var result = await route.Data.Handler(message, cancellationToken);
-                Console.WriteLine($"{Timing.Now} Routing Call: Done");
-                return result;
+                return await route.Data.Handler(message, cancellationToken);
             }
             catch (Exception ex)
             {
