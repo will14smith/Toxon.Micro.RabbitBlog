@@ -19,7 +19,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.HttpEntry
             var type = GetServiceType();
 
             builder
-                .ConfigureServices(services => services.AddSingleton(CreateSender()))
+                .ConfigureServices(services => services.AddSingleton(LambdaConfig.CreateSender()))
                 .Configure(app =>
                 {
                     app.UseExceptionHandler("/Error");
@@ -30,19 +30,5 @@ namespace Toxon.Micro.RabbitBlog.Serverless.HttpEntry
         
         protected abstract string GetServiceKey();
         protected abstract Type GetServiceType();
-
-        private static IRoutingSender CreateSender()
-        {
-            return new LambdaSender(GetRouterQueueName(), GetRouterFunctionName());
-        }
-
-        public static string GetRouterQueueName()
-        {
-            return Environment.GetEnvironmentVariable("ROUTER_QUEUE_NAME");
-        }
-        public static string GetRouterFunctionName()
-        {
-            return Environment.GetEnvironmentVariable("ROUTER_FUNCTION_NAME");
-        }
     }
 }

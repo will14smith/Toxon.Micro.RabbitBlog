@@ -3,6 +3,10 @@ using System.Threading.Tasks;
 using Amazon.Lambda.SQSEvents;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Newtonsoft.Json;
+using Toxon.Micro.RabbitBlog.Core;
+using Toxon.Micro.RabbitBlog.EntryStore.Inbound;
+using Toxon.Micro.RabbitBlog.Routing;
+using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Serverless.Core;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.ServiceEntry
@@ -15,10 +19,10 @@ namespace Toxon.Micro.RabbitBlog.Serverless.ServiceEntry
         {
             AWSSDKHandler.RegisterXRayForAllServices();
 
-            _handler = CreateHandler();
+            _handler = CreateHandler(LambdaConfig.CreateSender());
         }
 
-        protected abstract LocalModel CreateHandler();
+        protected abstract LocalModel CreateHandler(IRoutingSender sender);
 
         public async Task<MessageModel> HandleDirectAsync(MessageModel requestModel)
         {
@@ -42,5 +46,20 @@ namespace Toxon.Micro.RabbitBlog.Serverless.ServiceEntry
             Console.WriteLine("HandleQueueAsync done");
         }
 
+        protected async Task<Message> JsonHandler<TRequest, TResponse>(Message requestMessage, Func<TRequest, Task<TResponse>> handler)
+        {
+            var request = JsonMessage.Read<TRequest>(requestMessage);
+
+            var response = await handler(request);
+            var responseMessage = JsonMessage.Write(response);
+
+            return responseMessage;
+        }
+        protected async Task JsonHandler<TRequest>(Message requestMessage, Func<TRequest, Task> handler)
+        {
+            var request = JsonMessage.Read<TRequest>(requestMessage);
+
+            await handler(request);
+        }
     }
 }
