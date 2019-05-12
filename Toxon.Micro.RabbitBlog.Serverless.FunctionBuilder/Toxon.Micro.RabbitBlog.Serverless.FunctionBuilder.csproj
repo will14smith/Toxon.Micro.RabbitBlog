@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.10.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Plugins.Core\Toxon.Micro.RabbitBlog.Plugins.Core.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Plugins.Reflection\Toxon.Micro.RabbitBlog.Plugins.Reflection.csproj" />
+  </ItemGroup>
+
+</Project>

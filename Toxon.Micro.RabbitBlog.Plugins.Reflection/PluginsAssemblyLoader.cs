@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.RegularExpressions;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
@@ -34,7 +33,7 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
                 {
                     continue;
                 }
-
+                
                 result = result.Merge(context);
             }
             _deps = result;

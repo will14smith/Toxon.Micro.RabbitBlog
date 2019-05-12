@@ -236,7 +236,7 @@ namespace Toxon.Micro.RabbitBlog.Mesh
             await _udpClient.SendAsync(buffer, offset, memberServiceEndpoint);
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
+        public Task RegisterBusHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
             var id = Interlocked.Increment(ref _handlerCounter);
             _busHandlers.Add(id, handler);
@@ -248,7 +248,7 @@ namespace Toxon.Micro.RabbitBlog.Mesh
             return Task.CompletedTask;
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
+        public Task RegisterRpcHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
             var id = Interlocked.Increment(ref _handlerCounter);
             _rpcHandlers.Add(id, handler);

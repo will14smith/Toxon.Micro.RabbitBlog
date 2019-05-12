@@ -43,13 +43,13 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Core
             }
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
+        public Task RegisterBusHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
             _busRouter.Register(string.Empty, pattern, new BusRoutingData(handler));
             return Task.CompletedTask;
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
+        public Task RegisterRpcHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
             _rpcRouter.Register(string.Empty, pattern, new RpcRoutingData(handler));
             return Task.CompletedTask;

@@ -1,6 +1,6 @@
 ﻿namespace Toxon.Micro.RabbitBlog.Post.Inbound
 {
-    internal class PostEntryRequest
+    public class PostEntryRequest
     {
         public string Post => "entry";
 

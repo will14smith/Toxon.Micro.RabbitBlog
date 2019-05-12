@@ -22,9 +22,9 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
             _serviceName = serviceName;
         }
         
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
+        public Task RegisterBusHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
-            return _registration.RegisterHandlerAsync(
+            return _registration.RegisterBusHandlerAsync(
                 pattern,
                 async (message, handlerToken) =>
                 {
@@ -52,9 +52,9 @@ namespace Toxon.Micro.RabbitBlog.Zipkin
                 cancellationToken);
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
+        public Task RegisterRpcHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
-            return _registration.RegisterHandlerAsync(
+            return _registration.RegisterRpcHandlerAsync(
                 pattern,
                 async (message, handlerToken) =>
                 {

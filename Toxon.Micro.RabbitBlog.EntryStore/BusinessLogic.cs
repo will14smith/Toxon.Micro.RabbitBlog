@@ -11,7 +11,7 @@ using Toxon.Micro.RabbitBlog.Plugins.Core;
 namespace Toxon.Micro.RabbitBlog.EntryStore
 {
     [ServicePlugin("entry-store.v2")]
-    internal class BusinessLogic
+    public class BusinessLogic
     {
         private static class Keys
         {

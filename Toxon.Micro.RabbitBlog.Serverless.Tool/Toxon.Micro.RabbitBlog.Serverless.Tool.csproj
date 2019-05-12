@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Plugins.Reflection\Toxon.Micro.RabbitBlog.Plugins.Reflection.csproj" />
+    <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Serverless.FunctionBuilder\Toxon.Micro.RabbitBlog.Serverless.FunctionBuilder.csproj" />
     <ProjectReference Include="..\Toxon.Micro.RabbitBlog.Serverless.Router\Toxon.Micro.RabbitBlog.Serverless.Router.csproj" />
   </ItemGroup>
 

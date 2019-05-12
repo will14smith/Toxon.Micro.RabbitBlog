@@ -1,6 +1,6 @@
 ﻿namespace Toxon.Micro.RabbitBlog.EntryCache.Messages
 {
-    internal class StoreRequest
+    public class StoreRequest
     {
         public string Store { get; set; }
         public string Kind => "entry";

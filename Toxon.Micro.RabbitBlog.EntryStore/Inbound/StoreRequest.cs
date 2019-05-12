@@ -1,6 +1,6 @@
 ﻿namespace Toxon.Micro.RabbitBlog.EntryStore.Inbound
 {
-    internal class StoreRequest
+    public class StoreRequest
     {
         public string Store { get; set; }
         public string Kind => "entry";

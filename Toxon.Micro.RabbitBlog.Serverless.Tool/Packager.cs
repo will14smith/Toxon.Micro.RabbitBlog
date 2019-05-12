@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using Toxon.Micro.RabbitBlog.Plugins.Core;
 using Toxon.Micro.RabbitBlog.Plugins.Reflection;
 using Toxon.Micro.RabbitBlog.Serverless.Tool.Verbs;
 
@@ -24,56 +26,86 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
         {
             var artifactsFolder = Path.Combine(outputRoot, "artifacts");
             Directory.CreateDirectory(artifactsFolder);
+            var tempRoot = Path.Combine(outputRoot, "temp");
 
-            var hostFolder = RunPublish(outputRoot, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Host", "Toxon.Micro.RabbitBlog.Serverless.Host.csproj"), "host", true);
+            // Router
             PackageRouter(outputRoot, artifactsFolder);
 
-            var services = ServiceDiscoverer.Discover(_serviceDiscoveryOptions);
-            var pluginLoaders = Bootstrapper.LoadPlugins(services.Select(x => x.AssemblyPath));
-
-            foreach (var service in services)
+            // Function entrypoints
+            using (var serviceEntryFolder = RunPublish(tempRoot, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.ServiceEntry", "Toxon.Micro.RabbitBlog.Serverless.ServiceEntry.csproj"), "serviceEntry", true))
+            using (var httpEntryFolder = RunPublish(tempRoot, Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.HttpEntry", "Toxon.Micro.RabbitBlog.Serverless.HttpEntry.csproj"), "httpEntry", true))
             {
-                var assembly = pluginLoaders.Assemblies.Single(x => x.GetName().Name == service.Name);
-                var plugins = PluginDiscoverer.Discover(assembly);
-                if (!plugins.Any())
-                {
-                    continue;
-                }
+                var serviceEntryAssembly = Path.Combine(serviceEntryFolder.Path, "Toxon.Micro.RabbitBlog.Serverless.ServiceEntry.dll");
+                var httpEntryAssembly = Path.Combine(httpEntryFolder.Path, "Toxon.Micro.RabbitBlog.Serverless.HttpEntry.dll");
 
-                Package(outputRoot, artifactsFolder, service.ProjectPath, service.Name, hostFolder);
+                // Services
+                var services = ServiceDiscoverer.Discover(_serviceDiscoveryOptions);
+                var pluginLoaders = Bootstrapper.LoadPlugins(services.Select(x => x.AssemblyPath));
+
+                foreach (var service in services)
+                {
+                    var assembly = pluginLoaders.Assemblies.Single(x => x.GetName().Name == service.Name);
+                    PackageService(service, assembly, tempRoot, serviceEntryAssembly, httpEntryAssembly, artifactsFolder);
+                }
+            }
+        }
+
+        private void PackageService(ServiceProject service, Assembly assembly, string tempRoot, string serviceEntryAssembly, string httpEntryAssembly, string artifactsFolder)
+        {
+            var plugins = PluginDiscoverer.Discover(assembly);
+            if (!plugins.Any())
+            {
+                return;
             }
 
-            Directory.Delete(hostFolder, true);
+            var serviceFolder = RunPublish(tempRoot, service.ProjectPath, service.Name, false);
+            var serviceAssembly = Path.Combine(serviceFolder.Path, Path.GetFileName(assembly.Location));
+
+            var builder = new FunctionBuilder.Builder();
+
+            if (plugins.Any(x => x.ServiceType == ServiceType.MessageHandler))
+            {
+                using (var buildTargetFolder = new TempDirectory(tempRoot, service.Name + "-service"))
+                {
+                    var buildContext = new FunctionBuilder.BuildContext(ServiceType.MessageHandler, serviceEntryAssembly, serviceAssembly, buildTargetFolder.Path);
+                    builder.Build(buildContext);
+
+                    var packagePath = Path.Combine(artifactsFolder, $"{service.Name}-service.zip");
+                    CreateZip(buildTargetFolder, packagePath);
+                }
+            }
+
+            if (plugins.Any(x => x.ServiceType == ServiceType.Http))
+            {
+                using (var buildTargetFolder = new TempDirectory(tempRoot, service.Name + "-http"))
+                {
+                    var buildContext = new FunctionBuilder.BuildContext(ServiceType.Http, httpEntryAssembly, serviceAssembly, buildTargetFolder.Path);
+                    builder.Build(buildContext);
+
+                    var packagePath = Path.Combine(artifactsFolder, $"{service.Name}-http.zip");
+                    CreateZip(buildTargetFolder, packagePath);
+                }
+            }
         }
 
         private void PackageRouter(string outputRoot, string artifactsFolder)
         {
-            string projectPath = Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj");
-            var tempFolder = RunPublish(outputRoot, projectPath, "router", true);
-            var packagePath = Path.Combine(artifactsFolder, $"{"router"}.zip");
+            var projectPath = Path.Combine(_options.Root, "Toxon.Micro.RabbitBlog.Serverless.Router", "Toxon.Micro.RabbitBlog.Serverless.Router.csproj");
+            var packagePath = Path.Combine(artifactsFolder, "router.zip");
 
-            CreateZip(tempFolder, packagePath);
+            using (var tempFolder = RunPublish(Path.Combine(outputRoot, "temp"), projectPath, "router", true))
+            {
 
-            Directory.Delete(tempFolder, true);
+                CreateZip(tempFolder, packagePath);
+            }
+
             AddRoutesToPackage(outputRoot, packagePath);
         }
 
-        private void Package(string outputRoot, string artifactsFolder, string projectPath, string projectName, string hostFolder)
-        {
-            var tempFolder = RunPublish(outputRoot, projectPath, projectName, false);
-            DirectoryCopy(hostFolder, tempFolder, true, true);
-
-            var packagePath = Path.Combine(artifactsFolder, $"{projectName}.zip");
-
-            CreateZip(tempFolder, packagePath);
-
-            Directory.Delete(tempFolder, true);
-        }
-
-        private static void CreateZip(string folder, string zipPath)
+        private static void CreateZip(TempDirectory folder, string zipPath)
         {
             File.Delete(zipPath);
-            ZipFile.CreateFromDirectory(folder, zipPath);
+            ZipFile.CreateFromDirectory(folder.Path, zipPath);
             using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Update))
             {
                 foreach (var entry in zip.Entries)
@@ -87,10 +119,9 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             }
         }
 
-        private string RunPublish(string outputRoot, string projectPath, string projectName, bool isExecutable)
+        private TempDirectory RunPublish(string tempRoot, string projectPath, string projectName, bool isExecutable)
         {
-            var tempFolder = Path.Combine(outputRoot, "temp", projectName + "-" + DateTime.UtcNow.ToString("yyyyMMMMddHHmmss"));
-            Directory.CreateDirectory(tempFolder);
+            var tempFolder = new TempDirectory(tempRoot, projectName);
 
             var argsBuilder = new StringBuilder();
             argsBuilder.Append("publish");
@@ -137,42 +168,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                     routesFile.CopyTo(entryStream);
                     entryStream.Flush();
                 }
-            }
-        }
-
-        private static void DirectoryCopy(string sourceDirName, string destDirName, bool recursive, bool replaceExistingFiles = false)
-        {
-            var dir = new DirectoryInfo(sourceDirName);
-            if (!dir.Exists)
-            {
-                throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " + sourceDirName);
-            }
-
-            if (!Directory.Exists(destDirName))
-            {
-                Directory.CreateDirectory(destDirName);
-            }
-
-            foreach (var file in dir.GetFiles())
-            {
-                var path = Path.Combine(destDirName, file.Name);
-
-                if (File.Exists(path) && !replaceExistingFiles)
-                {
-                    continue;
-                }
-
-                file.CopyTo(path, replaceExistingFiles);
-            }
-
-            if (!recursive)
-            {
-                return;
-            }
-
-            foreach (var sub in dir.GetDirectories())
-            {
-                DirectoryCopy(sub.FullName, Path.Combine(destDirName, sub.Name), true, replaceExistingFiles);
             }
         }
     }

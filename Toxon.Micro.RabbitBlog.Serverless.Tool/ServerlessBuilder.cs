@@ -121,7 +121,6 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
             {
                 { "ROUTER_QUEUE_NAME", new YamlMappingNode { { "Fn::GetAtt", new YamlSequenceNode("RouterQueue", "QueueName") } } },
                 { "ROUTER_FUNCTION_NAME", new YamlMappingNode { { "Ref", "RouterLambdaFunction" } } },
-                { "PLUGIN_PATHS", Path.GetFileName(service.AssemblyPath) },
             };
 
             switch (plugin.ServiceType)
@@ -136,7 +135,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         functions.Add(functionName + "-queue", new YamlMappingNode
                         {
                             { "name", functionName + "-queue" },
-                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleQueueAsync" },
+                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.ServiceEntry::Toxon.Micro.RabbitBlog.Serverless.ServiceEntry.FunctionImpl::HandleQueueAsync" },
                             { "environment", env },
                             { "memorySize", "512" },
                             { "timeout", "60" },
@@ -144,7 +143,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                             {
                                 "package", new YamlMappingNode
                                 {
-                                    { "artifact", $"artifacts/{service.Name}.zip" },
+                                    { "artifact", $"artifacts/{service.Name}-service.zip" },
                                 }
                             },
                         });
@@ -156,26 +155,24 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         functions.Add(functionName, new YamlMappingNode
                         {
                             { "name", functionName },
-                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.LambdaFunction::HandleDirectAsync" },
+                            { "handler", "Toxon.Micro.RabbitBlog.Serverless.ServiceEntry::Toxon.Micro.RabbitBlog.Serverless.ServiceEntry.FunctionImpl::HandleDirectAsync" },
                             { "environment", env },
                             { "memorySize", "512" },
                             { "timeout", "60" },
                             {
                                 "package", new YamlMappingNode
                                 {
-                                    { "artifact", $"artifacts/{service.Name}.zip" },
+                                    { "artifact", $"artifacts/{service.Name}-service.zip" },
                                 }
                             },
                         });
                     }
                     break;
                 case ServiceType.Http:
-                    env.Add("HTTP_SERVICE_KEY", plugin.ServiceKey);
-
                     functions.Add(functionName, new YamlMappingNode
                     {
                         { "name", functionName },
-                        { "handler", "Toxon.Micro.RabbitBlog.Serverless.Host::Toxon.Micro.RabbitBlog.Serverless.Host.HttpFunction::FunctionHandlerAsync" },
+                        { "handler", "Toxon.Micro.RabbitBlog.Serverless.HttpEntry::Toxon.Micro.RabbitBlog.Serverless.HttpEntry.FunctionImpl::FunctionHandlerAsync" },
                         { "environment", env },
                         { "memorySize", "512" },
                         { "timeout", "60" },
@@ -183,7 +180,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.Tool
                         {
                             "package", new YamlMappingNode
                             {
-                                { "artifact", $"artifacts/{service.Name}.zip" },
+                                { "artifact", $"artifacts/{service.Name}-http.zip" },
                             }
                         },
                     });

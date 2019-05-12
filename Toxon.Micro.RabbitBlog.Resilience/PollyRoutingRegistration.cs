@@ -19,9 +19,9 @@ namespace Toxon.Micro.RabbitBlog.Resilience
             _policy = policy;
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
+        public Task RegisterBusHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
-            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterHandlerAsync(
+            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterBusHandlerAsync(
                 pattern,
                 (message, handlerToken) => _policy.ExecuteAsync((__, handlerPolicyToken) => handler(message, handlerPolicyToken), new Context(), handlerToken),
                 execution,
@@ -30,9 +30,9 @@ namespace Toxon.Micro.RabbitBlog.Resilience
             ), new Context(), cancellationToken);
         }
 
-        public Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
+        public Task RegisterRpcHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
-            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterHandlerAsync(
+            return _policy.ExecuteAsync((_, registerPolicyToken) => _registration.RegisterRpcHandlerAsync(
                 pattern,
                 (message, handlerToken) => _policy.AsAsyncPolicy<Message>().ExecuteAsync((__, handlerPolicyToken) => handler(message, handlerPolicyToken), new Context(), handlerToken),
                 execution,

@@ -62,12 +62,12 @@ namespace Toxon.Micro.RabbitBlog.Plugins.Reflection
             if (RouteHandlerFactory.IsRpc(route))
             {
                 var handler = RouteHandlerFactory.BuildRpcHandler(plugin, route);
-                await model.RegisterHandlerAsync(pattern, new Func<Message, CancellationToken, Task<Message>>(handler));
+                await model.RegisterRpcHandlerAsync(pattern, new Func<Message, CancellationToken, Task<Message>>(handler));
             }
             else
             {
                 var handler = RouteHandlerFactory.BuildBusHandler(plugin, route);
-                await model.RegisterHandlerAsync(pattern, new Func<Message, CancellationToken, Task>(handler));
+                await model.RegisterBusHandlerAsync(pattern, new Func<Message, CancellationToken, Task>(handler));
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace Toxon.Micro.RabbitBlog.Post.Inbound
 {
-    internal class PostEntryResponse
+    public class PostEntryResponse
     {
         public string Id { get; set; }
 

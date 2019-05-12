@@ -36,7 +36,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
             return await _rpc.SendAsync("toxon.micro.router.route", message, cancellationToken);
         }
 
-        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
+        public async Task RegisterBusHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task> handler, RouteExecution execution = RouteExecution.Asynchronous, RouteMode mode = RouteMode.Observe, CancellationToken cancellationToken = default)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{_serviceKey}-{pattern}";
@@ -55,7 +55,7 @@ namespace Toxon.Micro.RabbitBlog.Rabbit
 
             await _bus.RegisterHandlerAsync(route, handler, cancellationToken);
         }
-        public async Task RegisterHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
+        public async Task RegisterRpcHandlerAsync(IRequestMatcher pattern, Func<Message, CancellationToken, Task<Message>> handler, RouteExecution execution = RouteExecution.Synchronous, RouteMode mode = RouteMode.Capture, CancellationToken cancellationToken = default)
         {
             // TODO better route key? needs to be consistent across a cluster of services per route
             var route = $"{_serviceKey}-{pattern}";

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace Toxon.Micro.RabbitBlog.Routing.Patterns
 {
@@ -27,6 +28,34 @@ namespace Toxon.Micro.RabbitBlog.Routing.Patterns
             }).ToArray();
 
             return matchers.Length == 1 ? matchers.Single() : new AndMatcher(matchers);
+        }
+
+        public static string UnParse(IRequestMatcher matcher)
+        {
+            switch (matcher)
+            {
+                case AndMatcher andMatcher:
+                    return string.Join(",", andMatcher.RequestMatchers.Select(UnParse));
+                case FieldMatcher fieldMatcher:
+                    return $"{fieldMatcher.FieldName}:{UnParse(fieldMatcher.FieldValue)}";
+
+                default: throw new ArgumentOutOfRangeException(nameof(matcher));
+            }
+        }
+
+        private static string UnParse(IValueMatcher matcher)
+        {
+            switch (matcher)
+            {
+                case AnyValueMatcher _:
+                    return "*";
+                case EqualityValueMatcher equalityValueMatcher:
+                    return equalityValueMatcher.MatchValue.ToString();
+                case RegexValueMatcher _:
+                    throw new NotImplementedException();
+
+                default: throw new ArgumentOutOfRangeException(nameof(matcher));
+            }
         }
     }
 }

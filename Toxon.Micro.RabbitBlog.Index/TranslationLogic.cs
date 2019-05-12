@@ -9,7 +9,7 @@ using Toxon.Micro.RabbitBlog.Routing.Json;
 namespace Toxon.Micro.RabbitBlog.Index
 {
     [ServicePlugin("index-translator.v1")]
-    internal class TranslationLogic
+    public class TranslationLogic
     {
         private readonly IRoutingSender _sender;
 

@@ -4,7 +4,6 @@ using Amazon.Lambda.SQSEvents;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Newtonsoft.Json;
 using Toxon.Micro.RabbitBlog.Core;
-using Toxon.Micro.RabbitBlog.EntryStore.Inbound;
 using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Routing.Json;
 using Toxon.Micro.RabbitBlog.Serverless.Core;
@@ -46,7 +45,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.ServiceEntry
             Console.WriteLine("HandleQueueAsync done");
         }
 
-        protected async Task<Message> JsonHandler<TRequest, TResponse>(Message requestMessage, Func<TRequest, Task<TResponse>> handler)
+        protected async Task<Message> JsonRpcHandler<TRequest, TResponse>(Message requestMessage, Func<TRequest, Task<TResponse>> handler)
         {
             var request = JsonMessage.Read<TRequest>(requestMessage);
 
@@ -55,7 +54,7 @@ namespace Toxon.Micro.RabbitBlog.Serverless.ServiceEntry
 
             return responseMessage;
         }
-        protected async Task JsonHandler<TRequest>(Message requestMessage, Func<TRequest, Task> handler)
+        protected async Task JsonBusHandler<TRequest>(Message requestMessage, Func<TRequest, Task> handler)
         {
             var request = JsonMessage.Read<TRequest>(requestMessage);
 

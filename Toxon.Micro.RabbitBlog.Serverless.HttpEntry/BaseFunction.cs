@@ -4,7 +4,6 @@ using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Toxon.Micro.RabbitBlog.Routing;
 using Toxon.Micro.RabbitBlog.Serverless.Core;
 
 namespace Toxon.Micro.RabbitBlog.Serverless.HttpEntry
